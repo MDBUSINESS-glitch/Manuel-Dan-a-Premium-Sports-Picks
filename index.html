@@ -1,64 +1,955 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CONSTRUA SEU IMPÉRIO DIGITAL: DA IDEIA AO LANÇAMENTO DO SEU PRODUTO ONLINE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF para Download PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Open Sans', sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .ebook-container { max-width: 800px; margin: 0 auto; position: relative; }
-        .page { min-height: 100vh; padding: 40px 20px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px; border-radius: 10px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
-        .page.active { opacity: 1; transform: translateY(0); }
-        .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header h1 { font-family: 'Montserrat', sans-serif; font-size: 14px; color: #007BFF; }
-        .nav-buttons { display: flex; gap: 5px; }
-        .nav-btn { background: #FD7E14; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
-        .nav-btn:hover { background: #e06b00; }
-        .nav-btn:disabled { background: #ccc; cursor: not-allowed; }
-        .download-btn { background: #28a745; }
-        .download-btn:hover { background: #218838; }
-        .cover { text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #007BFF 0%, #FD7E14 100%); color: white; }
-        .cover h1 { font-family: 'Montserrat', sans-serif; font-size: 2.5em; margin-bottom: 10px; }
-        .cover p { font-size: 1.2em; margin-bottom: 20px; }
-        .cover .author { font-size: 1.1em; font-weight: 600; }
-        .section { margin: 20px 0; }
-        .section h2 { font-family: 'Montserrat', sans-serif; color: #007BFF; font-size: 1.8em; margin-bottom: 10px; }
-        .section h3 { color: #FD7E14; font-size: 1.3em; margin: 15px 0 10px; }
-        .activity { background: #f8f9fa; padding: 15px; border-left: 4px solid #FD7E14; margin: 10px 0; border-radius: 5px; }
-        .tools { background: #e9ecef; padding: 10px; border-radius: 5px; margin: 10px 0; }
-        .tools a { color: #007BFF; text-decoration: none; }
-        .tools a:hover { text-decoration: underline; }
-        .icon { color: #FD7E14; margin-right: 10px; }
-        img { max-width: 100%; height: auto; border-radius: 5px; margin: 10px 0; }
-        .conclusion { text-align: center; padding: 40px; }
-        @media (max-width: 768px) { .cover h1 { font-size: 2em; } .page { padding: 20px 10px; } .nav-buttons { flex-direction: column; } }
-    </style>
-</head>
-<body>
-    <div class="ebook-container">
-        <div class="header">
-            <h1>CONSTRUA SEU IMPÉRIO DIGITAL</h1>
-            <div class="nav-buttons">
-                <button class="nav-btn download-btn" id="downloadBtn" onclick="downloadPDF()">
-                    <i class="fas fa-download"></i> Download PDF
-                </button>
-                <button class="nav-btn" id="prevBtn" onclick="prevPage()" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
-                <button class="nav-btn" id="nextBtn" onclick="nextPage()">Próxima <i class="fas fa-chevron-right"></i></button>
+import { useState, useEffect, useCallback, useRef } from "react";
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const API_BASE = "https://api.the-odds-api.com/v4";
+const DEMO_KEY = "DEMO"; // user replaces this
+
+const SPORTS_CONFIG = [
+  { key: "soccer_epl", label: "Premier League", icon: "⚽", group: "Futebol" },
+  { key: "soccer_uefa_champs_league", label: "Champions League", icon: "⚽", group: "Futebol" },
+  { key: "soccer_spain_la_liga", label: "La Liga", icon: "⚽", group: "Futebol" },
+  { key: "soccer_germany_bundesliga", label: "Bundesliga", icon: "⚽", group: "Futebol" },
+  { key: "soccer_italy_serie_a", label: "Serie A", icon: "⚽", group: "Futebol" },
+  { key: "soccer_france_ligue_one", label: "Ligue 1", icon: "⚽", group: "Futebol" },
+  { key: "basketball_nba", label: "NBA", icon: "🏀", group: "Basquete" },
+  { key: "basketball_euroleague", label: "EuroLeague", icon: "🏀", group: "Basquete" },
+  { key: "americanfootball_nfl", label: "NFL", icon: "🏈", group: "Futebol Americano" },
+  { key: "icehockey_nhl", label: "NHL", icon: "🏒", group: "Hóquei" },
+  { key: "tennis_atp_french_open", label: "ATP", icon: "🎾", group: "Ténis" },
+  { key: "mma_mixed_martial_arts", label: "MMA/UFC", icon: "🥊", group: "MMA" },
+];
+
+const BOOKMAKERS = [
+  "Betano", "Bet365", "Betway", "1xBet", "William Hill",
+  "Unibet", "Bwin", "Pinnacle", "Betfair", "SportyBet"
+];
+
+// ─── MOCK DATA (quando não há API key real) ────────────────────────────────
+function generateMockEvents(sport) {
+  const teams = {
+    soccer: [["Manchester City","Arsenal"],["Liverpool","Chelsea"],["Real Madrid","Barcelona"],
+              ["Bayern Munich","Dortmund"],["PSG","Marseille"],["Benfica","Porto"],
+              ["Inter","Juventus"],["Atlético","Sevilla"]],
+    basketball: [["Lakers","Celtics"],["Warriors","Bucks"],["Heat","Nuggets"],["Nets","76ers"]],
+    football: [["Chiefs","Eagles"],["Cowboys","Giants"],["Packers","Bears"],["Ravens","Steelers"]],
+    tennis: [["Djokovic","Alcaraz"],["Sinner","Medvedev"],["Tsitsipas","Zverev"]],
+    mma: [["Jones","Miocic"],["Poirier","Oliveira"],["Adesanya","Whittaker"]],
+  };
+
+  const sportType = sport.includes("soccer") ? "soccer"
+    : sport.includes("basketball") ? "basketball"
+    : sport.includes("football") ? "football"
+    : sport.includes("tennis") ? "tennis"
+    : "mma";
+
+  const pairs = teams[sportType] || teams.soccer;
+  const now = Date.now();
+
+  return pairs.slice(0, 5).map((pair, i) => {
+    const bookOdds = BOOKMAKERS.slice(0, 6).map(bk => {
+      const base1 = 1.5 + Math.random() * 2.5;
+      const base2 = 1.5 + Math.random() * 2.5;
+      const draw = sportType === "soccer" ? 2.8 + Math.random() * 1.2 : null;
+      return {
+        key: bk.toLowerCase().replace(/\s/g, ""),
+        title: bk,
+        outcomes: [
+          { name: pair[0], price: parseFloat(base1.toFixed(2)) },
+          ...(draw ? [{ name: "Empate", price: parseFloat(draw.toFixed(2)) }] : []),
+          { name: pair[1], price: parseFloat(base2.toFixed(2)) },
+        ]
+      };
+    });
+
+    return {
+      id: `mock_${sport}_${i}`,
+      sport_key: sport,
+      home_team: pair[0],
+      away_team: pair[1],
+      commence_time: new Date(now + (i + 1) * 3600000 * 4).toISOString(),
+      bookmakers: bookOdds,
+    };
+  });
+}
+
+// ─── EV CALCULATION ───────────────────────────────────────────────────────────
+function calcNoVig(odds) {
+  const implied = odds.map(o => 1 / o);
+  const total = implied.reduce((a, b) => a + b, 0);
+  return implied.map(i => i / total);
+}
+
+function calcEV(decimalOdds, trueProbability) {
+  return ((decimalOdds - 1) * trueProbability - (1 - trueProbability)) * 100;
+}
+
+function findBestOdds(bookmakers, outcomeName) {
+  let best = null;
+  bookmakers.forEach(bk => {
+    const outcome = bk.outcomes?.find(o => o.name === outcomeName);
+    if (outcome && (!best || outcome.price > best.price)) {
+      best = { price: outcome.price, bookmaker: bk.title };
+    }
+  });
+  return best;
+}
+
+function getPinnacleOrBestLine(bookmakers, outcomeName) {
+  const priority = ["Pinnacle", "Betfair"];
+  for (const name of priority) {
+    const bk = bookmakers.find(b => b.title === name);
+    if (bk) {
+      const o = bk.outcomes?.find(o => o.name === outcomeName);
+      if (o) return o.price;
+    }
+  }
+  // use average of top 3
+  const all = bookmakers
+    .map(bk => bk.outcomes?.find(o => o.name === outcomeName)?.price)
+    .filter(Boolean)
+    .sort((a, b) => b - a)
+    .slice(0, 3);
+  return all.length ? all.reduce((a, b) => a + b, 0) / all.length : null;
+}
+
+function processEvents(events) {
+  const evBets = [];
+
+  events.forEach(event => {
+    if (!event.bookmakers?.length) return;
+
+    const allOutcomeNames = [...new Set(
+      event.bookmakers.flatMap(bk => bk.outcomes?.map(o => o.name) || [])
+    )];
+
+    const sharpLine = event.bookmakers.find(bk =>
+      ["pinnacle", "betfair"].includes(bk.key?.toLowerCase())
+    ) || event.bookmakers[0];
+
+    if (!sharpLine?.outcomes) return;
+
+    const sharpOdds = sharpLine.outcomes.map(o => o.price);
+    const noVigProbs = calcNoVig(sharpOdds);
+
+    sharpLine.outcomes.forEach((outcome, idx) => {
+      const trueProb = noVigProbs[idx];
+      const best = findBestOdds(event.bookmakers, outcome.name);
+      if (!best) return;
+
+      const ev = calcEV(best.price, trueProb);
+      const impliedProb = (1 / best.price) * 100;
+
+      evBets.push({
+        id: `${event.id}_${outcome.name}`,
+        event: event,
+        outcome: outcome.name,
+        bestOdds: best.price,
+        bestBookmaker: best.bookmaker,
+        trueProb: trueProb * 100,
+        impliedProb: impliedProb,
+        ev: ev,
+        edge: trueProb * 100 - impliedProb,
+        allOdds: event.bookmakers.map(bk => ({
+          bookmaker: bk.title,
+          odds: bk.outcomes?.find(o => o.name === outcome.name)?.price || null,
+        })).filter(o => o.odds),
+      });
+    });
+  });
+
+  return evBets.filter(b => b.ev > 0).sort((a, b) => b.ev - a.ev);
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function timeUntil(iso) {
+  const diff = new Date(iso) - new Date();
+  if (diff < 0) return "Ao Vivo";
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function evColor(ev) {
+  if (ev >= 8) return "#00e676";
+  if (ev >= 4) return "#69f0ae";
+  if (ev >= 2) return "#b9f6ca";
+  return "#e8f5e9";
+}
+
+function evBg(ev) {
+  if (ev >= 8) return "rgba(0,230,118,0.15)";
+  if (ev >= 4) return "rgba(105,240,174,0.10)";
+  if (ev >= 2) return "rgba(185,246,202,0.07)";
+  return "rgba(232,245,233,0.04)";
+}
+
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0d14;
+    --bg2: #0f1320;
+    --bg3: #161c2e;
+    --bg4: #1e2540;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.10);
+    --green: #00e676;
+    --green2: #00c853;
+    --blue: #448aff;
+    --text: #e8eaf6;
+    --text2: #8892b0;
+    --text3: #4a5568;
+    --red: #ff5252;
+    --yellow: #ffd740;
+    --radius: 10px;
+    --font: 'DM Sans', sans-serif;
+    --font2: 'Barlow Condensed', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--font); }
+  
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* NAV */
+  .nav {
+    display: flex; align-items: center; gap: 0;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 56px; position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: var(--font2); font-size: 22px; font-weight: 700;
+    color: var(--green); letter-spacing: -0.5px; margin-right: 32px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; }
+  .nav-links { display: flex; gap: 0; }
+  .nav-link {
+    padding: 0 16px; height: 56px; display: flex; align-items: center;
+    font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap;
+  }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--green); border-bottom-color: var(--green); }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .btn-api {
+    background: var(--bg4); border: 1px solid var(--border2); color: var(--text2);
+    padding: 7px 14px; border-radius: 7px; font-size: 12px; font-family: var(--font);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-api:hover { border-color: var(--blue); color: var(--text); }
+  .live-badge {
+    background: rgba(255,82,82,0.15); border: 1px solid rgba(255,82,82,0.3);
+    color: var(--red); font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; display: flex; align-items: center; gap: 5px;
+  }
+  .live-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* LAYOUT */
+  .layout { display: flex; flex: 1; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px; min-height: calc(100vh - 56px);
+    background: var(--bg2); border-right: 1px solid var(--border);
+    padding: 16px 12px; flex-shrink: 0; overflow-y: auto;
+  }
+  .sidebar-group { margin-bottom: 20px; }
+  .sidebar-group-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text3); padding: 0 8px; margin-bottom: 6px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+    border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--text2); transition: all 0.12s; margin-bottom: 1px;
+  }
+  .sidebar-item:hover { background: var(--bg3); color: var(--text); }
+  .sidebar-item.active { background: rgba(0,230,118,0.1); color: var(--green); }
+  .sidebar-icon { font-size: 14px; }
+
+  /* MAIN */
+  .main { flex: 1; overflow: hidden; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .topbar-title {
+    font-family: var(--font2); font-size: 20px; font-weight: 700; color: var(--text);
+    margin-right: 8px;
+  }
+  .filter-group { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .filter-select {
+    background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
+    padding: 7px 12px; border-radius: 7px; font-size: 12px; font-family: var(--font);
+    cursor: pointer; outline: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238892b0'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    padding-right: 28px;
+  }
+  .filter-select:focus { border-color: var(--blue); }
+
+  .ev-threshold {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    padding: 6px 12px; border-radius: 7px; font-size: 12px;
+  }
+  .ev-threshold input {
+    background: none; border: none; color: var(--green); font-family: var(--font);
+    font-weight: 700; font-size: 13px; width: 36px; outline: none; text-align: right;
+  }
+  .ev-threshold-label { color: var(--text2); }
+
+  .btn-refresh {
+    background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.25);
+    color: var(--green); padding: 7px 14px; border-radius: 7px;
+    font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-refresh:hover { background: rgba(0,230,118,0.18); }
+  .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* STATS BAR */
+  .stats-bar {
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+    padding: 10px 20px; display: flex; gap: 24px; align-items: center;
+  }
+  .stat-item { display: flex; align-items: center; gap: 8px; }
+  .stat-label { font-size: 11px; color: var(--text3); font-weight: 500; }
+  .stat-value { font-size: 14px; font-weight: 700; font-family: var(--font2); }
+  .stat-green { color: var(--green); }
+  .stat-blue { color: var(--blue); }
+  .stat-yellow { color: var(--yellow); }
+  .stat-divider { width: 1px; height: 20px; background: var(--border); }
+
+  /* CONTENT */
+  .content { padding: 16px 20px; }
+
+  /* TABLE HEADER */
+  .table-header {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 0.8fr 0.7fr 0.7fr 0.7fr 1fr;
+    padding: 8px 16px; gap: 8px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text3); margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* BET CARD */
+  .bet-card {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 6px;
+    transition: border-color 0.15s, transform 0.1s;
+    overflow: hidden; cursor: pointer;
+  }
+  .bet-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .bet-card.expanded { border-color: var(--border2); }
+
+  .bet-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 0.8fr 0.7fr 0.7fr 0.7fr 1fr;
+    padding: 12px 16px; gap: 8px; align-items: center;
+  }
+
+  .bet-event { }
+  .bet-teams { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .bet-meta { font-size: 11px; color: var(--text2); margin-top: 3px; display: flex; gap: 8px; align-items: center; }
+  .bet-league { color: var(--text3); }
+  .bet-time { color: var(--blue); font-weight: 500; }
+
+  .bet-outcome { font-size: 13px; font-weight: 600; color: var(--text); }
+  .bet-book { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .odds-pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(68,138,255,0.12); border: 1px solid rgba(68,138,255,0.25);
+    color: var(--blue); font-family: var(--font2); font-size: 16px; font-weight: 700;
+    padding: 5px 12px; border-radius: 8px; min-width: 60px;
+  }
+
+  .prob-bar { display: flex; flex-direction: column; gap: 4px; }
+  .prob-value { font-size: 13px; font-weight: 600; }
+  .prob-sub { font-size: 10px; color: var(--text3); }
+
+  .ev-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font2); font-size: 17px; font-weight: 700;
+    padding: 5px 12px; border-radius: 8px; min-width: 72px;
+  }
+
+  .edge-val { font-size: 13px; font-weight: 600; color: var(--green); }
+
+  .bet-action { display: flex; gap: 6px; justify-content: flex-end; }
+  .btn-track {
+    background: var(--bg4); border: 1px solid var(--border2); color: var(--text2);
+    padding: 5px 10px; border-radius: 6px; font-size: 11px; font-family: var(--font);
+    font-weight: 600; cursor: pointer; transition: all 0.12s;
+  }
+  .btn-track:hover { border-color: var(--green); color: var(--green); }
+  .btn-bet {
+    background: rgba(0,230,118,0.12); border: 1px solid rgba(0,230,118,0.3);
+    color: var(--green); padding: 5px 12px; border-radius: 6px;
+    font-size: 11px; font-family: var(--font); font-weight: 700; cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-bet:hover { background: rgba(0,230,118,0.22); }
+
+  /* EXPANDED */
+  .bet-expanded {
+    border-top: 1px solid var(--border); background: var(--bg4);
+    padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  .odds-comparison { }
+  .odds-comp-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 10px; }
+  .odds-comp-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 10px; border-radius: 6px; margin-bottom: 4px;
+    background: rgba(255,255,255,0.02);
+  }
+  .odds-comp-row.best { background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.15); }
+  .odds-comp-bk { font-size: 12px; font-weight: 500; color: var(--text2); }
+  .odds-comp-val { font-family: var(--font2); font-size: 15px; font-weight: 700; color: var(--text); }
+  .odds-comp-val.best { color: var(--green); }
+  .odds-comp-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .odds-comp-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.4s; }
+
+  .ev-analysis { }
+  .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .analysis-item { background: rgba(255,255,255,0.02); border-radius: 7px; padding: 10px; }
+  .analysis-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .analysis-val { font-family: var(--font2); font-size: 18px; font-weight: 700; }
+
+  .kelly-section { margin-top: 12px; }
+  .kelly-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 8px; }
+  .kelly-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .kelly-item { background: rgba(255,255,255,0.02); border-radius: 6px; padding: 8px; text-align: center; }
+  .kelly-frac { font-size: 10px; color: var(--text3); }
+  .kelly-val { font-size: 13px; font-weight: 700; color: var(--blue); font-family: var(--font2); }
+
+  /* LOADING */
+  .loading {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px; gap: 16px;
+  }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--text2); font-size: 14px; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 60px; }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .empty-sub { font-size: 14px; color: var(--text2); }
+
+  /* API MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200;
+    display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+  }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border2); border-radius: 14px;
+    padding: 28px; width: 440px; max-width: 95vw;
+  }
+  .modal-title { font-family: var(--font2); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+  .modal-input {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text); padding: 10px 14px; border-radius: 8px; font-family: var(--font);
+    font-size: 13px; outline: none; margin-bottom: 12px;
+  }
+  .modal-input:focus { border-color: var(--green); }
+  .modal-actions { display: flex; gap: 10px; }
+  .btn-primary {
+    flex: 1; background: var(--green); color: #000; font-family: var(--font);
+    font-weight: 700; font-size: 14px; padding: 10px; border: none;
+    border-radius: 8px; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--green2); }
+  .btn-secondary {
+    background: var(--bg4); border: 1px solid var(--border2); color: var(--text2);
+    font-family: var(--font); font-weight: 600; font-size: 14px; padding: 10px 18px;
+    border-radius: 8px; cursor: pointer;
+  }
+  .modal-note { font-size: 11px; color: var(--text3); margin-top: 10px; line-height: 1.5; }
+  .modal-link { color: var(--blue); text-decoration: none; }
+
+  /* TABS */
+  .view-tabs { display: flex; gap: 4px; padding: 12px 20px 0; }
+  .view-tab {
+    padding: 8px 18px; border-radius: 8px 8px 0 0; font-size: 13px; font-weight: 600;
+    cursor: pointer; color: var(--text2); background: var(--bg3); border: 1px solid var(--border);
+    border-bottom: none; transition: all 0.12s;
+  }
+  .view-tab.active { background: var(--bg3); color: var(--green); border-color: var(--border2); }
+
+  .no-select { user-select: none; }
+
+  /* ODDS TICKER */
+  .odds-ticker-bar {
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+    overflow: hidden; height: 32px; display: flex; align-items: center;
+    position: relative;
+  }
+  .odds-ticker {
+    display: flex; gap: 32px; animation: ticker 40s linear infinite;
+    white-space: nowrap; padding: 0 20px;
+  }
+  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .ticker-item { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+  .ticker-odds { color: var(--green); font-weight: 700; font-family: var(--font2); font-size: 13px; }
+  .ticker-ev { color: var(--yellow); font-size: 11px; }
+`;
+
+// ─── COMPONENT ────────────────────────────────────────────────────────────────
+export default function OddsPro() {
+  const [apiKey, setApiKey] = useState(localStorage.getItem("oddspro_key") || "");
+  const [showModal, setShowModal] = useState(false);
+  const [apiInput, setApiInput] = useState("");
+
+  const [activeSport, setActiveSport] = useState("soccer_epl");
+  const [activeTab, setActiveTab] = useState("ev"); // ev | arb | bestodds
+  const [loading, setLoading] = useState(false);
+  const [evBets, setEvBets] = useState([]);
+  const [expandedId, setExpandedId] = useState(null);
+  const [minEV, setMinEV] = useState(1);
+  const [minOdds, setMinOdds] = useState(1.0);
+  const [maxOdds, setMaxOdds] = useState(20);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [remainingReqs, setRemainingReqs] = useState(null);
+  const [useMock, setUseMock] = useState(!apiKey);
+
+  const sportConfig = SPORTS_CONFIG.find(s => s.key === activeSport);
+
+  async function fetchOdds(sport) {
+    setLoading(true);
+    try {
+      let events = [];
+      if (apiKey && apiKey !== "DEMO") {
+        const url = `${API_BASE}/sports/${sport}/odds/?apiKey=${apiKey}&regions=eu&markets=h2h&oddsFormat=decimal&bookmakers=betway,betfair,unibet,bet365,williamhill,pinnacle`;
+        const resp = await fetch(url);
+        const remaining = resp.headers.get("x-requests-remaining");
+        if (remaining) setRemainingReqs(parseInt(remaining));
+        if (!resp.ok) throw new Error("API error");
+        events = await resp.json();
+        setUseMock(false);
+      } else {
+        events = generateMockEvents(sport);
+        setUseMock(true);
+      }
+      const processed = processEvents(events).filter(
+        b => b.ev >= minEV && b.bestOdds >= minOdds && b.bestOdds <= maxOdds
+      );
+      setEvBets(processed);
+      setLastUpdate(new Date());
+    } catch (e) {
+      const events = generateMockEvents(sport);
+      setEvBets(processEvents(events));
+      setUseMock(true);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => { fetchOdds(activeSport); }, [activeSport]);
+
+  function saveKey() {
+    localStorage.setItem("oddspro_key", apiInput);
+    setApiKey(apiInput);
+    setShowModal(false);
+    setTimeout(() => fetchOdds(activeSport), 100);
+  }
+
+  const groupedSports = SPORTS_CONFIG.reduce((acc, s) => {
+    if (!acc[s.group]) acc[s.group] = [];
+    acc[s.group].push(s);
+    return acc;
+  }, {});
+
+  const topBets = evBets.slice(0, 3);
+
+  return (
+    <>
+      <style>{css}</style>
+      <div className="app">
+
+        {/* NAV */}
+        <nav className="nav no-select">
+          <div className="logo">
+            <div className="logo-dot" />
+            OddsPro
+          </div>
+          <div className="nav-links">
+            {["EV+ Finder","Arbitragem","Melhores Odds","Resultados","Dashboard"].map(n => (
+              <div key={n} className={`nav-link ${n === "EV+ Finder" ? "active" : ""}`}>{n}</div>
+            ))}
+          </div>
+          <div className="nav-right">
+            <div className="live-badge">
+              <div className="live-dot" /> AO VIVO
             </div>
+            <button className="btn-api" onClick={() => setShowModal(true)}>
+              {apiKey ? "✓ API Conectada" : "🔑 Inserir API Key"}
+            </button>
+          </div>
+        </nav>
+
+        {/* TICKER */}
+        <div className="odds-ticker-bar">
+          <div className="odds-ticker">
+            {[...evBets.slice(0,8), ...evBets.slice(0,8)].map((b, i) => (
+              <div key={i} className="ticker-item">
+                <span>{b.event.home_team} vs {b.event.away_team}</span>
+                <span>→</span>
+                <span style={{color:"#e8eaf6",fontWeight:600}}>{b.outcome}</span>
+                <span className="ticker-odds">{b.bestOdds.toFixed(2)}</span>
+                <span className="ticker-ev">EV: +{b.ev.toFixed(1)}%</span>
+                <span style={{color:"#4a5568"}}>|</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <!-- [Resto do conteúdo das páginas aqui – cole o HTML completo das páginas do código anterior para evitar repetição. Para brevidade, assuma que é o mesmo.] -->
-        <!-- ... (insira aqui o conteúdo das divs .page de page1 a page6, igual ao código anterior) ... -->
+        <div className="layout">
+          {/* SIDEBAR */}
+          <aside className="sidebar no-select">
+            {Object.entries(groupedSports).map(([group, sports]) => (
+              <div key={group} className="sidebar-group">
+                <div className="sidebar-group-title">{group}</div>
+                {sports.map(s => (
+                  <div
+                    key={s.key}
+                    className={`sidebar-item ${activeSport === s.key ? "active" : ""}`}
+                    onClick={() => setActiveSport(s.key)}
+                  >
+                    <span className="sidebar-icon">{s.icon}</span>
+                    {s.label}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </aside>
 
-    </div>
+          {/* MAIN */}
+          <div className="main">
+            {/* TOPBAR */}
+            <div className="topbar">
+              <div className="topbar-title">
+                {sportConfig?.icon} {sportConfig?.label}
+              </div>
+              {useMock && (
+                <div style={{fontSize:11,color:"#ffd740",background:"rgba(255,215,64,0.1)",border:"1px solid rgba(255,215,64,0.2)",padding:"4px 10px",borderRadius:6}}>
+                  ⚡ Modo Demo — Insere a tua API key para dados reais
+                </div>
+              )}
+              <div className="filter-group">
+                <div className="ev-threshold">
+                  <span className="ev-threshold-label">EV min:</span>
+                  <input
+                    type="number" value={minEV}
+                    onChange={e => setMinEV(parseFloat(e.target.value) || 0)}
+                    min={0} step={0.5}
+                  />
+                  <span style={{color:"var(--green)",fontWeight:700}}>%</span>
+                </div>
+                <select className="filter-select" value={minOdds}
+                  onChange={e => setMinOdds(parseFloat(e.target.value))}>
+                  <option value={1.0}>Odds min: Todas</option>
+                  <option value={1.5}>Odds min: 1.50</option>
+                  <option value={2.0}>Odds min: 2.00</option>
+                  <option value={2.5}>Odds min: 2.50</option>
+                </select>
+                <select className="filter-select" value={maxOdds}
+                  onChange={e => setMaxOdds(parseFloat(e.target.value))}>
+                  <option value={20}>Odds max: Todas</option>
+                  <option value={5}>Odds max: 5.00</option>
+                  <option value={10}>Odds max: 10.00</option>
+                </select>
+                <button className="btn-refresh" onClick={() => fetchOdds(activeSport)} disabled={loading}>
+                  {loading ? "⟳" : "↻"} Atualizar
+                </button>
+              </div>
+            </div>
 
-    <script>
-        // [Cole o script JS completo aqui também – navegação + downloadPDF, igual ao anterior.]
-    </script>
-</body>
-</html>
+            {/* STATS */}
+            <div className="stats-bar">
+              <div className="stat-item">
+                <span className="stat-label">Apostas EV+</span>
+                <span className="stat-value stat-green">{evBets.length}</span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat-item">
+                <span className="stat-label">Melhor EV</span>
+                <span className="stat-value stat-green">
+                  {evBets[0] ? `+${evBets[0].ev.toFixed(1)}%` : "—"}
+                </span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat-item">
+                <span className="stat-label">EV Médio</span>
+                <span className="stat-value stat-blue">
+                  {evBets.length ? `+${(evBets.reduce((a,b)=>a+b.ev,0)/evBets.length).toFixed(1)}%` : "—"}
+                </span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat-item">
+                <span className="stat-label">Jogos</span>
+                <span className="stat-value stat-yellow">
+                  {[...new Set(evBets.map(b=>b.event.id))].length}
+                </span>
+              </div>
+              {remainingReqs !== null && (
+                <>
+                  <div className="stat-divider" />
+                  <div className="stat-item">
+                    <span className="stat-label">Reqs restantes</span>
+                    <span className="stat-value" style={{color:"var(--text2)"}}>{remainingReqs}</span>
+                  </div>
+                </>
+              )}
+              {lastUpdate && (
+                <div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>
+                  Atualizado às {lastUpdate.toLocaleTimeString("pt-PT")}
+                </div>
+              )}
+            </div>
+
+            {/* CONTENT */}
+            <div className="content">
+              {/* Table header */}
+              {!loading && evBets.length > 0 && (
+                <div className="table-header">
+                  <span>JOGO / EVENTO</span>
+                  <span>APOSTA</span>
+                  <span>ODDS</span>
+                  <span>PROB. REAL</span>
+                  <span>PROB. IMP.</span>
+                  <span>EDGE</span>
+                  <span style={{textAlign:"right"}}>EV%</span>
+                </div>
+              )}
+
+              {loading ? (
+                <div className="loading">
+                  <div className="spinner" />
+                  <div className="loading-text">A carregar odds em tempo real...</div>
+                </div>
+              ) : evBets.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-icon">📊</div>
+                  <div className="empty-title">Nenhuma aposta EV+ encontrada</div>
+                  <div className="empty-sub">Tenta reduzir o EV mínimo ou muda de desporto</div>
+                </div>
+              ) : (
+                evBets.map(bet => {
+                  const isExpanded = expandedId === bet.id;
+                  const minOddsVal = Math.min(...bet.allOdds.map(o=>o.odds));
+                  const maxOddsVal = Math.max(...bet.allOdds.map(o=>o.odds));
+                  const kelly = (bet.trueProb/100 - (1-bet.trueProb/100)/(bet.bestOdds-1)) * 100;
+                  const halfKelly = kelly / 2;
+                  const quarterKelly = kelly / 4;
+
+                  return (
+                    <div
+                      key={bet.id}
+                      className={`bet-card ${isExpanded ? "expanded" : ""}`}
+                      onClick={() => setExpandedId(isExpanded ? null : bet.id)}
+                      style={isExpanded ? {borderColor: evColor(bet.ev)+"55"} : {}}
+                    >
+                      <div className="bet-row">
+                        {/* EVENT */}
+                        <div className="bet-event">
+                          <div className="bet-teams">
+                            {bet.event.home_team} <span style={{color:"var(--text3)",fontWeight:400}}>vs</span> {bet.event.away_team}
+                          </div>
+                          <div className="bet-meta">
+                            <span className="bet-league">{sportConfig?.label}</span>
+                            <span>·</span>
+                            <span className="bet-time">{timeUntil(bet.event.commence_time)}</span>
+                          </div>
+                        </div>
+
+                        {/* OUTCOME */}
+                        <div>
+                          <div className="bet-outcome">{bet.outcome}</div>
+                          <div className="bet-book">📍 {bet.bestBookmaker}</div>
+                        </div>
+
+                        {/* ODDS */}
+                        <div>
+                          <div className="odds-pill">{bet.bestOdds.toFixed(2)}</div>
+                        </div>
+
+                        {/* TRUE PROB */}
+                        <div className="prob-bar">
+                          <div className="prob-value" style={{color:"var(--green)"}}>
+                            {bet.trueProb.toFixed(1)}%
+                          </div>
+                          <div className="prob-sub">sem vig</div>
+                        </div>
+
+                        {/* IMPLIED */}
+                        <div className="prob-bar">
+                          <div className="prob-value" style={{color:"var(--text2)"}}>
+                            {bet.impliedProb.toFixed(1)}%
+                          </div>
+                          <div className="prob-sub">implícita</div>
+                        </div>
+
+                        {/* EDGE */}
+                        <div className="edge-val">
+                          +{Math.max(0, bet.trueProb - bet.impliedProb).toFixed(1)}%
+                        </div>
+
+                        {/* EV */}
+                        <div style={{textAlign:"right"}}>
+                          <div
+                            className="ev-badge"
+                            style={{
+                              color: evColor(bet.ev),
+                              background: evBg(bet.ev),
+                              border: `1px solid ${evColor(bet.ev)}33`,
+                            }}
+                          >
+                            +{bet.ev.toFixed(1)}%
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* EXPANDED */}
+                      {isExpanded && (
+                        <div className="bet-expanded" onClick={e => e.stopPropagation()}>
+                          {/* ODDS COMPARISON */}
+                          <div className="odds-comparison">
+                            <div className="odds-comp-title">📊 Comparação de Odds — {bet.outcome}</div>
+                            {bet.allOdds
+                              .sort((a,b) => b.odds - a.odds)
+                              .map(o => {
+                                const isBest = o.odds === maxOddsVal;
+                                const pct = ((o.odds - minOddsVal) / (maxOddsVal - minOddsVal + 0.01)) * 100;
+                                return (
+                                  <div key={o.bookmaker} className={`odds-comp-row ${isBest?"best":""}`}>
+                                    <span className="odds-comp-bk">
+                                      {isBest ? "⭐ " : ""}{o.bookmaker}
+                                      {isBest ? <span style={{fontSize:10,color:"var(--green)",marginLeft:6}}>MELHOR</span> : ""}
+                                    </span>
+                                    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flex:1,marginLeft:12}}>
+                                      <div className={`odds-comp-val ${isBest?"best":""}`}>
+                                        {o.odds.toFixed(2)}
+                                      </div>
+                                      <div className="odds-comp-bar" style={{width:"100%"}}>
+                                        <div className="odds-comp-fill" style={{width:`${pct}%`,background: isBest?"var(--green)":"var(--blue)"}} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+
+                          {/* ANALYSIS */}
+                          <div className="ev-analysis">
+                            <div className="odds-comp-title">🎯 Análise EV</div>
+                            <div className="analysis-grid">
+                              <div className="analysis-item">
+                                <div className="analysis-label">Valor Esperado</div>
+                                <div className="analysis-val" style={{color:evColor(bet.ev)}}>
+                                  +{bet.ev.toFixed(2)}%
+                                </div>
+                              </div>
+                              <div className="analysis-item">
+                                <div className="analysis-label">Probabilidade Real</div>
+                                <div className="analysis-val" style={{color:"var(--blue)"}}>
+                                  {bet.trueProb.toFixed(2)}%
+                                </div>
+                              </div>
+                              <div className="analysis-item">
+                                <div className="analysis-label">Odds Implícitas</div>
+                                <div className="analysis-val" style={{color:"var(--text)"}}>
+                                  {bet.impliedProb.toFixed(2)}%
+                                </div>
+                              </div>
+                              <div className="analysis-item">
+                                <div className="analysis-label">Edge</div>
+                                <div className="analysis-val" style={{color:"var(--green)"}}>
+                                  +{Math.max(0,bet.trueProb-bet.impliedProb).toFixed(2)}%
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="kelly-section">
+                              <div className="kelly-title">📐 Critério de Kelly (por €100)</div>
+                              <div className="kelly-grid">
+                                <div className="kelly-item">
+                                  <div className="kelly-frac">Kelly completo</div>
+                                  <div className="kelly-val">€{Math.max(0,kelly).toFixed(1)}</div>
+                                </div>
+                                <div className="kelly-item">
+                                  <div className="kelly-frac">½ Kelly</div>
+                                  <div className="kelly-val">€{Math.max(0,halfKelly).toFixed(1)}</div>
+                                </div>
+                                <div className="kelly-item">
+                                  <div className="kelly-frac">¼ Kelly</div>
+                                  <div className="kelly-val">€{Math.max(0,quarterKelly).toFixed(1)}</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{display:"flex",gap:8,marginTop:14}}>
+                              <button className="btn-track">+ Rastrear</button>
+                              <button className="btn-bet" style={{flex:1}}>
+                                Apostar em {bet.bestBookmaker} →
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* API KEY MODAL */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-title">🔑 Conectar API de Odds</div>
+            <div className="modal-sub">
+              Usa a <strong>The Odds API</strong> (gratuita) para obter odds reais de mais de 40 casas de apostas em tempo real.
+              O plano grátis inclui 500 pedidos/mês.
+            </div>
+            <input
+              className="modal-input"
+              placeholder="Cole aqui a tua API key..."
+              value={apiInput}
+              onChange={e => setApiInput(e.target.value)}
+              autoFocus
+            />
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
+              <button className="btn-primary" onClick={saveKey}>Conectar</button>
+            </div>
+            <div className="modal-note">
+              Obtém a tua key gratuita em{" "}
+              <a href="https://the-odds-api.com" className="modal-link" target="_blank">
+                the-odds-api.com
+              </a>{" "}
+              · Sem cartão de crédito necessário · 500 pedidos/mês grátis
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
