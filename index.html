@@ -60,7 +60,7 @@ input,select,textarea{font-family:var(--font)}
 /* =====================================================
    SIDEBAR
    ===================================================== */
-#sidebar{
+#sidebar{overflow-y:auto;
   width:var(--sidebar);flex-shrink:0;
   background:var(--bg1);
   border-right:1px solid var(--border);
@@ -75,7 +75,7 @@ input,select,textarea{font-family:var(--font)}
   display:flex;align-items:center;gap:11px;
   padding:14px 16px;
   border-bottom:1px solid var(--border);
-  min-height:var(--topbar);
+  min-height:var(--topbar);gap:13px;
 }
 .sb-logo-icon{
   width:38px;height:38px;border-radius:10px;flex-shrink:0;
@@ -88,11 +88,11 @@ input,select,textarea{font-family:var(--font)}
   content:'';position:absolute;inset:0;
   background:linear-gradient(145deg,rgba(255,255,255,.2),transparent 60%);
 }
-.sb-logo-icon i{font-size:1rem;color:#fff;position:relative;z-index:1}
+.sb-logo-icon i{font-size:1.15rem;color:#fff;position:relative;z-index:1}
 .sb-logo-text{display:flex;flex-direction:column;gap:1px;line-height:1}
-.sb-logo-name{font-family:var(--display);font-size:.78rem;font-weight:800;letter-spacing:.5px;color:#fff;white-space:nowrap}
+.sb-logo-name{font-family:var(--display);font-size:.95rem;font-weight:900;letter-spacing:.5px;color:#fff;white-space:nowrap}
 .sb-logo-name em{color:var(--green);font-style:normal}
-.sb-logo-sub{font-size:.55rem;font-weight:700;letter-spacing:2px;color:var(--t3);text-transform:uppercase}
+.sb-logo-sub{font-size:.6rem;font-weight:700;letter-spacing:1.8px;color:var(--t3);text-transform:uppercase}
 
 .sb-nav{flex:1;padding:6px 0}
 .sb-section{padding:4px 0}
@@ -125,7 +125,10 @@ input,select,textarea{font-family:var(--font)}
 .chip-live{background:rgba(255,77,106,.14);color:var(--red);animation:blink 1.3s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-.sb-footer{
+.sb-sub-label{font-size:.52rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 18px 2px;display:block}
+.sb-section-inner{padding-bottom:4px}
+.sb-sport-item{font-size:.76rem}
+
   padding:12px 16px;border-top:1px solid var(--border);
   display:flex;flex-direction:column;gap:8px;
 }
@@ -245,12 +248,19 @@ input,select,textarea{font-family:var(--font)}
 .oj-pill:hover{border-color:rgba(0,212,255,.3);color:var(--t1)}
 .oj-pill.active{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.35);color:var(--cyan)}
 .oj-pill select{
-  background:transparent;border:none;color:inherit;
+  background:transparent;border:none;color:var(--t2);
   font-size:.76rem;font-weight:600;outline:none;cursor:pointer;
   -webkit-appearance:none;padding-right:1px;
 }
-.oj-pill select option{background:var(--bg2);color:var(--t1)}
+.oj-pill select option{background:var(--bg2);color:var(--t1);font-size:.8rem}
 .oj-pill .fa-chevron-down{font-size:.55rem;opacity:.6}
+/* Pill with full-width select */
+.oj-pill.pill-select{padding:0;overflow:hidden}
+.oj-pill.pill-select select{
+  padding:6px 12px;width:100%;height:100%;min-height:32px;
+  background:transparent;color:var(--t1);
+}
+
 
 .oj-pill-search{
   margin-left:auto;display:flex;align-items:center;gap:7px;
@@ -1096,7 +1106,7 @@ input,select,textarea{font-family:var(--font)}
         <span class="sb-1x-name">1XBET</span>
         <span class="sb-1x-tag">Parceiro</span>
       </div>
-      <div class="sb-1x-bonus">🎁 Bónus até €130</div>
+      <div class="sb-1x-bonus">🎁 Bónus 200% até 13.200 MZN</div>
       <div class="sb-1x-sub">Clica para te registares agora →</div>
     </a>
     <div class="api-status">
@@ -1164,48 +1174,44 @@ input,select,textarea{font-family:var(--font)}
       <div class="oj-filter-row" id="oj-filter-row">
         <div class="oj-pill active" id="pill-all" onclick="setSBAll(this)">All</div>
         <div class="oj-pill" onclick=""><i class="fas fa-star" style="color:var(--yellow);font-size:.7rem"></i> Favorites</div>
-        <div class="oj-pill">
-          <select id="sb-sport" onchange="loadSB()"><option value="">Sport…</option></select>
-          <i class="fas fa-chevron-down"></i>
+        <div class="oj-pill" style="padding:0">
+          <select id="sb-sport" onchange="this.closest('.oj-pill').classList.add('active');loadSB()" style="background:transparent;border:none;color:var(--t2);font-size:.76rem;font-weight:600;outline:none;cursor:pointer;padding:6px 12px;height:100%;width:100%;min-width:130px">
+            <option value="">Sport…</option>
+          </select>
         </div>
-        <div class="oj-pill">
-          <select id="sb-mkt-top" onchange="setSBMkt(this.value)">
+        <div class="oj-pill" style="padding:0">
+          <select id="sb-mkt-top" onchange="setSBMkt(this.value)" style="background:transparent;border:none;color:var(--t2);font-size:.76rem;font-weight:600;outline:none;cursor:pointer;padding:6px 12px;height:100%;min-width:130px">
             <option value="h2h">Moneyline</option>
             <option value="spreads">Point Spread</option>
             <option value="totals">Total Points</option>
           </select>
-          <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="oj-pill">
-          <select id="sb-type">
+        <div class="oj-pill" style="padding:0">
+          <select id="sb-type" style="background:transparent;border:none;color:var(--t2);font-size:.76rem;font-weight:600;outline:none;cursor:pointer;padding:6px 12px;height:100%">
             <option value="games">Games</option>
           </select>
-          <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="oj-pill">
-          <select id="sb-region" onchange="loadSB()">
+        <div class="oj-pill" style="padding:0">
+          <select id="sb-region" onchange="if($('sb-sport').value)loadSB()" style="background:transparent;border:none;color:var(--t2);font-size:.76rem;font-weight:600;outline:none;cursor:pointer;padding:6px 12px;height:100%;min-width:90px">
             <option value="eu,uk">EU + UK</option>
             <option value="us">US</option>
             <option value="au">AU</option>
             <option value="eu">EU Only</option>
           </select>
-          <i class="fas fa-chevron-down"></i>
         </div>
-        <div class="oj-pill" id="sb-book-pill" style="min-width:150px">
-          <i class="fas fa-book" style="font-size:.7rem"></i>
-          <select id="sb-book-filter"><option value="">Sportsbooks</option></select>
-          <i class="fas fa-chevron-down"></i>
+        <div class="oj-pill" id="sb-book-pill" style="min-width:150px;padding:0">
+          <i class="fas fa-book" style="font-size:.7rem;padding-left:10px;color:var(--t3)"></i>
+          <select id="sb-book-filter" onchange="filterSBTable()" style="background:transparent;border:none;color:var(--t2);font-size:.76rem;font-weight:600;outline:none;cursor:pointer;padding:6px 8px;height:100%;flex:1"><option value="">Sportsbooks</option></select>
         </div>
         <div class="oj-pill-search"><i class="fas fa-search"></i><input id="sb-search" placeholder="Search…" oninput="filterSBTable()"></div>
       </div>
       <div class="oj-mkt-row" id="oj-mkt-row">
-        <div class="oj-mkt active" onclick="setSBMktPill('h2h',this)">Main Markets</div>
-        <div class="oj-mkt active" onclick="setSBMktPill('h2h',this)">Moneyline</div>
-        <div class="oj-mkt" onclick="setSBMktPill('spreads',this)">Point Spread</div>
-        <div class="oj-mkt" onclick="setSBMktPill('totals',this)">Total Points</div>
-        <div class="oj-mkt" onclick="">1st Half Moneyline</div>
-        <div class="oj-mkt" onclick="">1st Half Total Points</div>
-        <div class="oj-mkt" onclick="">Team Total</div>
+        <div class="oj-mkt active" id="mkt-pill-h2h" onclick="setSBMktPill('h2h',this)">Moneyline</div>
+        <div class="oj-mkt" id="mkt-pill-spreads" onclick="setSBMktPill('spreads',this)">Point Spread</div>
+        <div class="oj-mkt" id="mkt-pill-totals" onclick="setSBMktPill('totals',this)">Total Points</div>
+        <div class="oj-mkt" onclick="toast('Mercado em breve','i')">1st Half Moneyline</div>
+        <div class="oj-mkt" onclick="toast('Mercado em breve','i')">1st Half Total Points</div>
+        <div class="oj-mkt" onclick="toast('Mercado em breve','i')">Team Total</div>
         <div class="oj-mkt-actions">
           <div class="mkt-act" title="Favoritos"><i class="fas fa-star"></i></div>
           <div class="mkt-act" title="Alertas"><i class="fas fa-bell"></i></div>
@@ -1221,8 +1227,8 @@ input,select,textarea{font-family:var(--font)}
             <div class="i1x-desc">Acesso a mais de 1000 eventos diários · Odds competitivas · Pagamentos rápidos · Suporte 24/7</div>
           </div>
           <div class="i1x-right">
-            <div class="i1x-bonus-big">€130</div>
-            <div class="i1x-bonus-sub">Bónus de boas-vindas</div>
+            <div class="i1x-bonus-big">13.200 MZN</div>
+            <div class="i1x-bonus-sub">Bónus 200% boas-vindas</div>
             <div class="i1x-btn">Registar Agora</div>
           </div>
         </a>
@@ -1258,8 +1264,8 @@ input,select,textarea{font-family:var(--font)}
           <div class="i1x-desc">A 1XBET tem algumas das odds mais altas do mercado — ideal para apostas +EV. Regista-te agora!</div>
         </div>
         <div class="i1x-right">
-          <div class="i1x-bonus-big">€130</div>
-          <div class="i1x-bonus-sub">Bónus boas-vindas</div>
+          <div class="i1x-bonus-big">13.200 MZN</div>
+          <div class="i1x-bonus-sub">Bónus 200% boas-vindas</div>
           <div class="i1x-btn">Abrir Conta</div>
         </div>
       </a>
@@ -1601,35 +1607,6 @@ input,select,textarea{font-family:var(--font)}
 
 <!-- GENERIC MODAL -->
 <div class="modal-bg" id="modal-bg" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><div class="modal-hdr"><h3 id="modal-t">Detail</h3><button class="modal-cls" onclick="closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-bdy" id="modal-b"></div></div></div>
-
-<!-- ===== FLOATING 1XBET BANNER ===== -->
-<div id="oxbet-float" style="display:none">
-  <div class="oxbet-top">
-    <div class="oxbet-logo">
-      <div class="oxbet-logo-icon">1X</div>
-      <span>1XBET</span>
-    </div>
-    <button class="oxbet-close" onclick="document.getElementById('oxbet-float').style.display='none'" title="Fechar">✕</button>
-  </div>
-  <div class="oxbet-body">
-    <div class="oxbet-badge"><i class="fas fa-star" style="font-size:.55rem"></i> Parceiro Exclusivo</div>
-    <div class="oxbet-headline">Regista-te agora e recebe<br><span>Bónus de Boas-Vindas</span></div>
-    <div class="oxbet-sub">Mais de 1000 eventos por dia · Odds competitivas · Pagamentos rápidos em Moçambique</div>
-    <div class="oxbet-bonus">
-      <div><div class="oxbet-bonus-val">€130</div><div class="oxbet-bonus-lbl">Bónus máximo</div></div>
-      <div style="text-align:right"><div style="font-size:.72rem;color:rgba(255,255,255,.7);font-weight:700">+ Odds Exclusivas</div><div style="font-size:.62rem;color:rgba(255,255,255,.35);margin-top:2px">Via Manuel Dança</div></div>
-    </div>
-    <div class="oxbet-odds-preview" id="ox-odds-preview">
-      <div class="oxbet-odd-chip" onclick="window.open('https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667','_blank')"><div class="och-team">Man City</div><div class="och-odd">1.85</div></div>
-      <div class="oxbet-odd-chip" onclick="window.open('https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667','_blank')"><div class="och-team">Empate</div><div class="och-odd">3.60</div></div>
-      <div class="oxbet-odd-chip" onclick="window.open('https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667','_blank')"><div class="och-team">Liverpool</div><div class="och-odd">4.20</div></div>
-    </div>
-    <a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" class="oxbet-cta" onclick="track1xbet('float-cta')">
-      <i class="fas fa-user-plus" style="margin-right:7px"></i>Criar Conta na 1XBET
-    </a>
-    <div class="oxbet-terms">18+ · Joga com responsabilidade · T&C aplicam-se</div>
-  </div>
-</div>
 
 <!-- TOASTS -->
 <div class="toast-wrap" id="toasts"></div>
@@ -2264,13 +2241,27 @@ function showEVDetail(idx){
    SPORTSBOOK SCREEN
    ───────────────────────────────────────────────────────────── */
 function setSBAll(el){$$('#oj-filter-row .oj-pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');}
-function setSBMkt(mkt){S.sbMkt=mkt;$$('#oj-mkt-row .oj-mkt').forEach(p=>p.classList.remove('active'));if(S.sbLastData.length) renderSBTable(S.sbLastData,S.sbLastBMs);}
 function setSBMktPill(mkt,el){
   S.sbMkt=mkt;
-  $$('#oj-mkt-row .oj-mkt').forEach(p=>p.classList.remove('active'));el.classList.add('active');
-  $('sb-mkt-top').value=mkt;
-  if($('sb-sport').value) loadSB();
+  $$('#oj-mkt-row .oj-mkt').forEach(p=>p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  // Also sync the top dropdown
+  const mktSel=$('sb-mkt-top');if(mktSel) mktSel.value=mkt;
+  // Reload if sport already selected
+  const sport=$('sb-sport')?.value;
+  if(sport) loadSB();
+  else toast('Seleciona um desporto primeiro','w');
 }
+function setSBMkt(mkt){
+  S.sbMkt=mkt;
+  // Sync the sub-row pills
+  $$('#oj-mkt-row .oj-mkt').forEach(p=>p.classList.remove('active'));
+  const pillId='mkt-pill-'+mkt;
+  const pill=$(pillId);if(pill) pill.classList.add('active');
+  if(S.sbLastData.length) renderSBTable(S.sbLastData,S.sbLastBMs);
+  else if($('sb-sport')?.value) loadSB();
+}
+
 
 async function loadSB() {
   const sport=$('sb-sport').value;
@@ -2993,9 +2984,24 @@ function selectPlan(planId){
    SPORT NAV + DROPDOWNS INIT
    ───────────────────────────────────────────────────────────── */
 function initMenus(){
-  $('sport-nav').innerHTML=SPORTS.map(s=>`<a class="sb-item" onclick="quickSport('${s.k}',this)"><span style="width:16px">${s.i}</span><span>${s.n}</span></a>`).join('');
+  // Build grouped sports nav in sidebar
+  const cats = [...new Set(SPORTS.map(s=>s.cat))];
+  let navHtml = '';
+  cats.forEach(cat => {
+    const sportsCat = SPORTS.filter(s=>s.cat===cat);
+    navHtml += `<div class="sb-section-inner">
+      <span class="sb-sub-label">${cat}</span>
+      ${sportsCat.map(s=>`<a class="sb-item sb-sport-item" data-key="${s.k}" onclick="quickSport('${s.k}',this)"><span style="width:18px;text-align:center">${s.i}</span><span>${s.n}</span></a>`).join('')}
+    </div>`;
+  });
+  const sn = $('sport-nav');
+  if(sn) sn.innerHTML = navHtml;
+
+  // Sport select dropdown
   const sbSel=$('sb-sport');
-  sbSel.innerHTML='<option value="">Sport…</option>'+SPORTS.map(s=>`<option value="${s.k}">${s.i} ${s.n}</option>`).join('');
+  if(sbSel) sbSel.innerHTML='<option value="">Selecionar…</option>'+SPORTS.map(s=>`<option value="${s.k}">${s.i} ${s.n}</option>`).join('');
+
+  // EV/Arb sport selects
   ['ev-sport','arb-sport'].forEach(id=>{
     const el=$(id);if(!el) return;
     el.innerHTML='<option value="all">All Sports</option>'+SPORTS.map(s=>`<option value="${s.k}">${s.i} ${s.n}</option>`).join('');
@@ -3007,9 +3013,13 @@ function initMenus(){
 }
 
 function quickSport(k,el){
-  $$('.sb-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');
-  $$('.page').forEach(p=>p.classList.remove('active'));$('pg-sportsbook').classList.add('active');
-  S.page='sportsbook';$('sb-sport').value=k;loadSB();
+  $$('.sb-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  $('pg-sportsbook').classList.add('active');
+  S.page='sportsbook';
+  const sel=$('sb-sport');if(sel) sel.value=k;
+  loadSB();
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -3086,10 +3096,7 @@ function updateFloatOdds() {
   if(chips.length) preview.innerHTML = chips.join('');
 }
 
-// Show float banner after 4 seconds delay
-setTimeout(()=>{
-  const fl=$('oxbet-float');if(fl){fl.style.display='block';}
-},4000);
+
 
 
 document.addEventListener('DOMContentLoaded', async ()=>{
