@@ -550,6 +550,16 @@ async function fetchOdds(sportKey,markets='h2h'){
     const url=`${API_BASE}/sports/${sportKey}/odds/?apiKey=${API_KEY}&regions=${REGIONS}&markets=${markets}&oddsFormat=decimal`;
     try{
         const r=await fetch(url);
+        if(r.status===401){
+            const el=document.getElementById('api-status');
+            el.innerHTML='<i class="fas fa-circle"></i><span>API: Chave inválida</span>';
+            toast('❌ Chave API inválida ou expirada!','error');
+            return null;
+        }
+        if(r.status===422){
+            toast(`Desporto "${sportKey}" indisponível de momento`,'warning');
+            return [];
+        }
         if(!r.ok)throw new Error('API '+r.status);
         const rem=r.headers.get('x-requests-remaining'),used=r.headers.get('x-requests-used');
         if(rem){
@@ -557,10 +567,14 @@ async function fetchOdds(sportKey,markets='h2h'){
             el.innerHTML='<i class="fas fa-circle"></i><span>API: Online</span>';
             el.classList.add('connected');
             document.getElementById('api-usage').innerHTML=`<span>Requests: ${used}/${parseInt(used)+parseInt(rem)}</span>`;
+            if(parseInt(rem)<10)toast(`⚠️ Apenas ${rem} requests restantes!`,'warning');
         }
         return await r.json();
     }catch(e){
-        console.error(e);toast('Erro API: '+e.message,'error');
+        console.error(e);
+        const el=document.getElementById('api-status');
+        el.innerHTML='<i class="fas fa-circle"></i><span>API: Offline</span>';
+        toast('Erro API: '+e.message,'error');
         return null;
     }
 }
@@ -1095,4 +1109,13 @@ document.addEventListener('keydown',e=>{
     if(e.key==='r'&&e.ctrlKey){e.preventDefault();refreshData()}
 });
 
-document.addEventListener('DOMContentLoad
+document.addEventListener('DOMContentLoaded',()=>{
+    console.log('🚀 Manuel Dança Premium Sports Picks iniciando...');
+    initSportsMenus();
+    renderTracker();
+    loadDashboard();
+    toast('Manuel Dança Premium Sports Picks iniciado!','success');
+});
+</script>
+</body>
+</html>
