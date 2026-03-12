@@ -875,6 +875,161 @@ input,select,textarea{font-family:var(--font)}
 .coming i{font-size:3rem;color:var(--cyan);opacity:.4}
 .coming h2{font-size:1.2rem;color:var(--t2);font-family:var(--display);font-weight:800}
 
+/* ===== 1XBET BANNER ===== */
+/* Floating corner banner */
+#oxbet-float{
+  position:fixed;bottom:20px;right:20px;z-index:8888;
+  width:300px;
+  background:linear-gradient(135deg,#1a3365 0%,#0d1e40 50%,#112b60 100%);
+  border:1px solid rgba(26,85,132,.7);
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
+  animation:floatIn .5s cubic-bezier(.34,1.56,.64,1);
+  transition:transform .2s,box-shadow .2s;
+}
+#oxbet-float:hover{transform:translateY(-3px);box-shadow:0 16px 56px rgba(0,0,0,.8),0 0 40px rgba(26,133,255,.2)}
+@keyframes floatIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.oxbet-top{
+  background:linear-gradient(135deg,#1a5685,#0f3d6e);
+  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.oxbet-logo{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--display);font-size:1.1rem;font-weight:900;
+  letter-spacing:-0.5px;color:#fff;
+}
+.oxbet-logo-icon{
+  width:32px;height:32px;border-radius:7px;
+  background:linear-gradient(135deg,#1a6bc7,#0d4d9e);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:900;color:#fff;letter-spacing:-.5px;
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 2px 10px rgba(26,107,199,.6);
+}
+.oxbet-close{
+  background:none;border:none;color:rgba(255,255,255,.4);
+  cursor:pointer;font-size:.8rem;padding:2px 4px;transition:color .2s;
+  line-height:1;
+}
+.oxbet-close:hover{color:#fff}
+.oxbet-body{padding:14px 14px 12px}
+.oxbet-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,204,0,.15);border:1px solid rgba(255,204,0,.3);
+  color:#ffd600;font-size:.6rem;font-weight:900;
+  padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:8px;
+}
+.oxbet-headline{
+  font-family:var(--display);font-size:1rem;font-weight:900;
+  color:#fff;line-height:1.25;margin-bottom:4px;
+}
+.oxbet-headline span{color:#ffd600}
+.oxbet-sub{font-size:.72rem;color:rgba(255,255,255,.6);margin-bottom:12px;line-height:1.4}
+.oxbet-bonus{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;padding:10px 12px;margin-bottom:12px;
+}
+.oxbet-bonus-val{font-family:var(--display);font-size:1.5rem;font-weight:900;color:#ffd600;line-height:1}
+.oxbet-bonus-lbl{font-size:.62rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+.oxbet-odds-preview{display:flex;gap:5px;margin-bottom:12px}
+.oxbet-odd-chip{
+  flex:1;text-align:center;padding:7px 4px;
+  background:rgba(26,107,199,.2);border:1px solid rgba(26,107,199,.35);
+  border-radius:7px;cursor:pointer;transition:all .18s;
+}
+.oxbet-odd-chip:hover{background:rgba(26,107,199,.4);border-color:rgba(26,107,199,.6)}
+.oxbet-odd-chip .och-team{font-size:.6rem;color:rgba(255,255,255,.5);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oxbet-odd-chip .och-odd{font-size:.88rem;font-weight:900;color:#fff;font-family:var(--mono)}
+.oxbet-cta{
+  display:block;width:100%;text-align:center;
+  background:linear-gradient(135deg,#1a6bc7,#0d4d9e);
+  color:#fff;padding:11px;border-radius:9px;
+  font-size:.82rem;font-weight:900;letter-spacing:.3px;
+  text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 4px 20px rgba(26,107,199,.5);
+  transition:all .2s;position:relative;overflow:hidden;
+  font-family:var(--font);
+}
+.oxbet-cta::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  animation:shimmer 2.5s infinite;
+}
+@keyframes shimmer{to{left:200%}}
+.oxbet-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(26,107,199,.7)}
+.oxbet-terms{text-align:center;font-size:.58rem;color:rgba(255,255,255,.25);margin-top:7px}
+
+/* Sidebar 1xbet promo */
+.sb-1xbet{
+  margin:0 10px 8px;padding:10px 12px;
+  background:linear-gradient(135deg,rgba(26,85,132,.35),rgba(13,30,64,.5));
+  border:1px solid rgba(26,107,199,.35);border-radius:10px;
+  cursor:pointer;transition:all .2s;
+  text-decoration:none;display:block;
+}
+.sb-1xbet:hover{border-color:rgba(26,107,199,.65);background:rgba(26,107,199,.12);transform:translateX(3px)}
+.sb-1x-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.sb-1x-icon{
+  width:24px;height:24px;border-radius:5px;
+  background:linear-gradient(135deg,#1a6bc7,#0d4d9e);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;font-weight:900;color:#fff;flex-shrink:0;
+  border:1px solid rgba(255,255,255,.1);
+}
+.sb-1x-name{font-size:.72rem;font-weight:900;color:#fff;font-family:var(--display)}
+.sb-1x-tag{margin-left:auto;font-size:.52rem;font-weight:900;background:rgba(255,204,0,.15);color:#ffd600;padding:2px 6px;border-radius:20px;border:1px solid rgba(255,204,0,.25);text-transform:uppercase;letter-spacing:.3px}
+.sb-1x-bonus{font-size:.68rem;color:#ffd600;font-weight:800;margin-bottom:2px}
+.sb-1x-sub{font-size:.62rem;color:rgba(255,255,255,.45)}
+
+/* Inline banner inside content */
+.inline-1xbet{
+  margin:14px 20px 0;
+  background:linear-gradient(135deg,#0d1e40 0%,#1a3365 50%,#0a1830 100%);
+  border:1px solid rgba(26,107,199,.4);border-radius:12px;
+  overflow:hidden;display:flex;align-items:stretch;
+  box-shadow:0 4px 24px rgba(0,0,0,.4);
+  text-decoration:none;transition:all .22s;
+  position:relative;
+}
+.inline-1xbet::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#1a6bc7,#ffd600,#1a6bc7);
+  background-size:200% 100%;animation:gradSlide 3s linear infinite;
+}
+@keyframes gradSlide{to{background-position:200% 0}}
+.inline-1xbet:hover{border-color:rgba(26,107,199,.7);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.i1x-left{padding:16px 20px;flex:1}
+.i1x-eyebrow{font-size:.6rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:#ffd600;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.i1x-eyebrow::before{content:'★';font-size:.7rem}
+.i1x-title{font-family:var(--display);font-size:1.05rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:5px}
+.i1x-title span{color:#ffd600}
+.i1x-desc{font-size:.74rem;color:rgba(255,255,255,.55);line-height:1.4}
+.i1x-right{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px 20px;border-left:1px solid rgba(255,255,255,.07);
+  gap:8px;flex-shrink:0;min-width:140px;
+}
+.i1x-bonus-big{
+  font-family:var(--display);font-size:1.6rem;font-weight:900;
+  color:#ffd600;line-height:1;text-align:center;
+}
+.i1x-bonus-sub{font-size:.6rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;text-align:center}
+.i1x-btn{
+  background:linear-gradient(135deg,#1a6bc7,#1259ad);
+  color:#fff;padding:8px 16px;border-radius:7px;
+  font-size:.74rem;font-weight:900;letter-spacing:.2px;
+  border:1px solid rgba(255,255,255,.15);white-space:nowrap;
+  box-shadow:0 3px 12px rgba(26,107,199,.5);
+  position:relative;overflow:hidden;
+}
+.i1x-btn::after{
+  content:'→';margin-left:5px;
+}
+
+
 /* RESPONSIVE */
 @media(max-width:900px){
   :root{--sidebar:210px}
@@ -935,6 +1090,15 @@ input,select,textarea{font-family:var(--font)}
     </div>
   </div>
   <div class="sb-footer">
+    <a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" class="sb-1xbet" onclick="track1xbet('sidebar')">
+      <div class="sb-1x-top">
+        <div class="sb-1x-icon">1X</div>
+        <span class="sb-1x-name">1XBET</span>
+        <span class="sb-1x-tag">Parceiro</span>
+      </div>
+      <div class="sb-1x-bonus">🎁 Bónus até €130</div>
+      <div class="sb-1x-sub">Clica para te registares agora →</div>
+    </a>
     <div class="api-status">
       <div class="api-dot" id="api-dot"></div>
       <span class="api-lbl" id="api-lbl">API: Conectando…</span>
@@ -1050,7 +1214,21 @@ input,select,textarea{font-family:var(--font)}
         </div>
       </div>
       <div class="oj-table-scroll" id="sb-table-wrap">
+        <a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" class="inline-1xbet" onclick="track1xbet('sb-banner')">
+          <div class="i1x-left">
+            <div class="i1x-eyebrow">Parceiro Oficial — Oferta Exclusiva</div>
+            <div class="i1x-title">Regista-te na <span>1XBET</span> e começa a apostar</div>
+            <div class="i1x-desc">Acesso a mais de 1000 eventos diários · Odds competitivas · Pagamentos rápidos · Suporte 24/7</div>
+          </div>
+          <div class="i1x-right">
+            <div class="i1x-bonus-big">€130</div>
+            <div class="i1x-bonus-sub">Bónus de boas-vindas</div>
+            <div class="i1x-btn">Registar Agora</div>
+          </div>
+        </a>
+        <div style="padding:6px 0" id="sb-table-inner">
         <div class="empty-cell" style="padding:70px">Seleciona um desporto para ver odds em tempo real</div>
+        </div>
       </div>
     </div>
 
@@ -1073,6 +1251,18 @@ input,select,textarea{font-family:var(--font)}
       <div class="ev-notify">
         <span><i class="fas fa-bell" style="color:var(--cyan);margin-right:6px"></i>Ativa notificações para +EV em tempo real. <a href="#">Saber mais →</a></span>
       </div>
+      <a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" class="inline-1xbet" style="margin:10px 20px 0" onclick="track1xbet('ev-banner')">
+        <div class="i1x-left">
+          <div class="i1x-eyebrow">Aposta as tuas +EV na 1XBET</div>
+          <div class="i1x-title">Odds <span>acima do mercado</span> todos os dias</div>
+          <div class="i1x-desc">A 1XBET tem algumas das odds mais altas do mercado — ideal para apostas +EV. Regista-te agora!</div>
+        </div>
+        <div class="i1x-right">
+          <div class="i1x-bonus-big">€130</div>
+          <div class="i1x-bonus-sub">Bónus boas-vindas</div>
+          <div class="i1x-btn">Abrir Conta</div>
+        </div>
+      </a>
       <div id="ev-filters" style="display:none;padding:0 20px">
         <div class="filters-bar">
           <div class="fg"><label>Sport</label><select id="ev-sport" onchange="loadEVPage()"><option value="all">All</option></select></div>
@@ -1411,6 +1601,35 @@ input,select,textarea{font-family:var(--font)}
 
 <!-- GENERIC MODAL -->
 <div class="modal-bg" id="modal-bg" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()"><div class="modal-hdr"><h3 id="modal-t">Detail</h3><button class="modal-cls" onclick="closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-bdy" id="modal-b"></div></div></div>
+
+<!-- ===== FLOATING 1XBET BANNER ===== -->
+<div id="oxbet-float" style="display:none">
+  <div class="oxbet-top">
+    <div class="oxbet-logo">
+      <div class="oxbet-logo-icon">1X</div>
+      <span>1XBET</span>
+    </div>
+    <button class="oxbet-close" onclick="document.getElementById('oxbet-float').style.display='none'" title="Fechar">✕</button>
+  </div>
+  <div class="oxbet-body">
+    <div class="oxbet-badge"><i class="fas fa-star" style="font-size:.55rem"></i> Parceiro Exclusivo</div>
+    <div class="oxbet-headline">Regista-te agora e recebe<br><span>Bónus de Boas-Vindas</span></div>
+    <div class="oxbet-sub">Mais de 1000 eventos por dia · Odds competitivas · Pagamentos rápidos em Moçambique</div>
+    <div class="oxbet-bonus">
+      <div><div class="oxbet-bonus-val">€130</div><div class="oxbet-bonus-lbl">Bónus máximo</div></div>
+      <div style="text-align:right"><div style="font-size:.72rem;color:rgba(255,255,255,.7);font-weight:700">+ Odds Exclusivas</div><div style="font-size:.62rem;color:rgba(255,255,255,.35);margin-top:2px">Via Manuel Dança</div></div>
+    </div>
+    <div class="oxbet-odds-preview" id="ox-odds-preview">
+      <div class="oxbet-odd-chip" onclick="window.open('https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667','_blank')"><div class="och-team">Man City</div><div class="och-odd">1.85</div></div>
+      <div class="oxbet-odd-chip" onclick="window.open('https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667','_blank')"><div class="och-team">Empate</div><div class="och-odd">3.60</div></div>
+      <div class="oxbet-odd-chip" onclick="window.open('https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667','_blank')"><div class="och-team">Liverpool</div><div class="och-odd">4.20</div></div>
+    </div>
+    <a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" class="oxbet-cta" onclick="track1xbet('float-cta')">
+      <i class="fas fa-user-plus" style="margin-right:7px"></i>Criar Conta na 1XBET
+    </a>
+    <div class="oxbet-terms">18+ · Joga com responsabilidade · T&C aplicam-se</div>
+  </div>
+</div>
 
 <!-- TOASTS -->
 <div class="toast-wrap" id="toasts"></div>
@@ -2058,10 +2277,10 @@ async function loadSB() {
   const market=$('sb-mkt-top')?.value||'h2h';
   S.sbMkt=market;
   if(!sport){toast('Seleciona um desporto','w');return;}
-  const wrap=$('sb-table-wrap');
-  wrap.innerHTML='<div class="loading-cell" style="padding:70px"><div class="spinner"></div>A carregar odds em tempo real…</div>';
+  const inner=$('sb-table-inner')||$('sb-table-wrap');
+  inner.innerHTML='<div class="loading-cell" style="padding:70px"><div class="spinner"></div>A carregar odds em tempo real…</div>';
   const data=await callOdds(sport,market);
-  if(!data||!data.length){wrap.innerHTML='<div class="empty-cell" style="padding:70px">Sem jogos disponíveis</div>';return;}
+  if(!data||!data.length){inner.innerHTML='<div class="empty-cell" style="padding:70px">Sem jogos disponíveis</div>';return;}
   const bmSet=new Set();data.forEach(g=>g.bookmakers?.forEach(b=>bmSet.add(b.title)));
   const bmList=[...bmSet].sort();
   S.sbLastData=data;S.sbLastBMs=bmList;
@@ -2080,15 +2299,78 @@ function renderSBTable(data,bmList){
   const filterBM=$('sb-book-filter')?.value||'';
   const search=$('sb-search')?.value?.toLowerCase()||'';
   const displayBMs=filterBM?[filterBM]:bmList;
-  const wrap=$('sb-table-wrap');
+  const inner=$('sb-table-inner')||$('sb-table-wrap');
   let html=`<table class="oj-table"><thead><tr>
     <th class="col-hash">#</th>
     <th class="col-team">TEAM</th>
     <th class="col-best">BEST ODDS</th>
     <th class="col-avg">AVG ODDS</th>
-    ${displayBMs.map(b=>`<th class="col-bk"><div class="bk-hdr"><div class="bk-logo" style="background:${bmColor(b)}">${b.slice(0,3).toUpperCase()}</div><span class="bk-name">${b.length>11?b.slice(0,9)+'…':b}</span></div></th>`).join('')}
+    ${displayBMs.map(b=>{
+      const is1x=b.toLowerCase().includes('1xbet')||b.toLowerCase().includes('1x');
+      return `<th class="col-bk" ${is1x?'style="background:rgba(26,107,199,.08)"':''}><div class="bk-hdr">${is1x?`<a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" onclick="track1xbet('table-header')" title="Abrir 1XBET" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px"><div class="bk-logo" style="background:${bmColor(b)};box-shadow:0 0 10px rgba(26,107,199,.5);border:1px solid rgba(26,107,199,.5)">${b.slice(0,3).toUpperCase()}</div><span class="bk-name" style="color:#ffd600">${b.length>11?b.slice(0,9)+'…':b} ★</span></a>`:`<div class="bk-logo" style="background:${bmColor(b)}">${b.slice(0,3).toUpperCase()}</div><span class="bk-name">${b.length>11?b.slice(0,9)+'…':b}</span>`}</div></th>`;
+    }).join('')}
     <th style="width:60px"></th>
   </tr></thead><tbody>`;
+  let num=500;
+  data.forEach(game=>{
+    if(search&&!`${game.home_team} ${game.away_team}`.toLowerCase().includes(search)) return;
+    const mktOuts=game.bookmakers?.[0]?.markets?.find(m=>m.key===S.sbMkt)?.outcomes||[];
+    if(!mktOuts.length) return;
+    const isLive=new Date(game.commence_time)<new Date();
+    const dateLbl=isLive?'● LIVE':new Date(game.commence_time).toLocaleDateString('pt-PT',{month:'numeric',day:'numeric'})+' · '+new Date(game.commence_time).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+    html+=`<tr class="oj-game-hdr"><td colspan="${5+displayBMs.length}"><span class="game-tag ${isLive?'live':''}">${isLive?'<span class="live-dot"></span>':''} ${dateLbl}</span></td></tr>`;
+    mktOuts.forEach((out,idx)=>{
+      let bestP=0,bestBM='',prices=[];
+      game.bookmakers?.forEach(bm=>{
+        const m=bm.markets?.find(mk=>mk.key===S.sbMkt);
+        const o=m?.outcomes?.find(oc=>oc.name===out.name);
+        if(o){prices.push(o.price);if(o.price>bestP){bestP=o.price;bestBM=bm.title;}}
+      });
+      const avgP=prices.length?prices.reduce((a,b)=>a+b)/prices.length:0;
+      const clr=bmColor(game.home_team||out.name);
+      let lbl=out.name;if(out.point!=null)lbl+=(out.name.toLowerCase().includes('under')?' -':' +')+Math.abs(out.point);
+      html+=`<tr class="oj-row ${idx===mktOuts.length-1?'row-sep':''}">
+        <td class="td-hash">${num+idx}</td>
+        <td><div class="td-team">
+          <div class="team-badge" style="background:${clr}">${(out.name||'?').slice(0,3).toUpperCase()}</div>
+          <div class="team-info">
+            <div class="team-name">${lbl}</div>
+            <div class="team-meta">${idx===0?game.home_team:game.away_team}</div>
+          </div>
+          <div class="td-row-actions">
+            <div class="ra-btn" title="Favourite"><i class="fas fa-star"></i></div>
+            <div class="ra-btn" title="Alert"><i class="fas fa-bell"></i></div>
+            <div class="ra-btn" title="Add to tracker" onclick=""><i class="fas fa-plus"></i></div>
+          </div>
+        </div></td>
+        <td class="td-best"><div class="best-odd" onclick=""><span class="best-val">${fmtOdd(bestP)}</span><span class="best-bk">${bestBM.slice(0,12)}</span></div></td>
+        <td class="td-avg">${fmtOdd(avgP)}</td>
+        ${displayBMs.map(bm=>{
+          const b=game.bookmakers?.find(x=>x.title===bm);
+          const m=b?.markets?.find(mk=>mk.key===S.sbMkt);
+          const o=m?.outcomes?.find(oc=>oc.name===out.name);
+          const is1x=bm.toLowerCase().includes('1xbet')||bm.toLowerCase().includes('1x');
+          if(o){
+            const isBest=bm===bestBM;
+            const fv=getFairOdd(game,S.sbMkt,out.name);
+            const ev=fv?calcEVUtil(o.price,fv):0;
+            const evCls=ev>=2?'style="color:var(--green)"':ev<-5?'style="color:var(--red)"':'';
+            if(is1x){
+              return `<td class="td-bk" style="background:rgba(26,107,199,.06)"><a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" onclick="track1xbet('odd-click')" style="text-decoration:none;display:block"><div class="bk-odd ${isBest?'is-best':''}" style="${isBest?'border-color:rgba(255,214,0,.4)':''}"><span class="bk-num" ${evCls}>${fmtOdd(o.price)}</span>${isBest?'<span style="font-size:.5rem;color:#ffd600">★BEST</span>':''}</div></a></td>`;
+            }
+            return `<td class="td-bk"><div class="bk-odd ${isBest?'is-best':''}" onclick="copyOdd('${bm}',${o.price},'${out.name.replace(/'/g,'')}')"><span class="bk-num" ${evCls}>${fmtOdd(o.price)}</span></div></td>`;
+          }
+          if(is1x) return `<td class="td-bk" style="background:rgba(26,107,199,.04)"><a href="https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667" target="_blank" rel="noopener" onclick="track1xbet('odd-na')" style="text-decoration:none;display:block;text-align:center"><span style="font-size:.6rem;color:rgba(26,107,199,.6);font-weight:700">ABRIR →</span></a></td>`;
+          return `<td class="td-bk"><span class="bk-na">—</span></td>`;
+        }).join('')}
+        <td></td>
+      </tr>`;
+    });
+    num+=2;
+  });
+  html+='</tbody></table>';
+  inner.innerHTML=html;
+}
   let num=500;
   data.forEach(game=>{
     if(search&&!`${game.home_team} ${game.away_team}`.toLowerCase().includes(search)) return;
@@ -2774,8 +3056,42 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 /* ─────────────────────────────────────────────────────────────
-   BOOT
+   1XBET AFFILIATE TRACKING
    ───────────────────────────────────────────────────────────── */
+const OX_URL = 'https://1xlite-22127.world/mobile?bf=99c492a8bc884_3556234667';
+function track1xbet(source) {
+  // Track click source for analytics
+  const clicks = JSON.parse(localStorage.getItem('ox_clicks')||'[]');
+  clicks.push({ts:Date.now(),source});
+  localStorage.setItem('ox_clicks',JSON.stringify(clicks.slice(-100)));
+  // Update float banner odds with live data
+  updateFloatOdds();
+}
+function updateFloatOdds() {
+  // Update preview odds in float banner with live data if available
+  if (!S.sbLastData.length) return;
+  const sample = S.sbLastData.slice(0,3);
+  const preview = $('ox-odds-preview');
+  if (!preview) return;
+  const chips = sample.map(g=>{
+    const bk = g.bookmakers?.find(b=>b.key?.includes('1x'))||g.bookmakers?.[0];
+    const mkt = bk?.markets?.find(m=>m.key==='h2h');
+    const o = mkt?.outcomes?.[0];
+    if(!o) return '';
+    return `<div class="oxbet-odd-chip" onclick="window.open('${OX_URL}','_blank');track1xbet('float-odd')">
+      <div class="och-team">${g.home_team.split(' ').pop()}</div>
+      <div class="och-odd">${o.price.toFixed(2)}</div>
+    </div>`;
+  }).filter(Boolean);
+  if(chips.length) preview.innerHTML = chips.join('');
+}
+
+// Show float banner after 4 seconds delay
+setTimeout(()=>{
+  const fl=$('oxbet-float');if(fl){fl.style.display='block';}
+},4000);
+
+
 document.addEventListener('DOMContentLoaded', async ()=>{
   console.log('🏆 Manuel Dança Premium Sports Picks v3.0');
   initMenus();
