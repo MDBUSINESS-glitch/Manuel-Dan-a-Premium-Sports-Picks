@@ -94,6 +94,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
 #content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg-black)}
 .page{display:none}
 .page.active{display:block;animation:pgIn .18s ease}
+.pal-page.active{display:flex;flex-direction:column;height:calc(100vh - var(--top));overflow:hidden}
 @keyframes pgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 /* PAGE HEADER */
@@ -707,7 +708,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
     <!-- ══════════════════════════════════
          PALPITES — Enhanced v6
     ══════════════════════════════════ -->
-    <div id="pg-palpites" class="page" style="display:flex;flex-direction:column;height:calc(100vh - var(--top));overflow:hidden">
+    <div id="pg-palpites" class="page pal-page">
       <!-- Header -->
       <div class="pg-header" style="flex-shrink:0">
         <div>
