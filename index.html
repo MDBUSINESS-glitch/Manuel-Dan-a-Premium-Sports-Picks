@@ -1621,53 +1621,63 @@ async function loadPalpites() {
   const setStep=(t,s='')=>{pc.innerHTML=`<div style="text-align:center;padding:60px 20px"><div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(37,99,235,.2));border:2px solid rgba(124,58,237,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;animation:aiPulse 1.5s ease-in-out infinite"><i class="fas fa-magic" style="color:#c4b5fd;font-size:1.2rem"></i></div><div style="font-size:.9rem;font-weight:600;color:var(--t1);margin-bottom:6px">${t}</div><div style="font-size:.78rem;color:var(--t3);max-width:400px;margin:0 auto">${s}</div></div><style>@keyframes aiPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.7}}</style>`;};
 
   try {
-    // ── 1. Carregar odds — ligas top + secundárias + terciárias ──
     if(!ODDS_KEY){ throw new Error('Chave API necessária — configura no banner amarelo acima.'); }
-    setStep('📡 A carregar odds — ligas top + secundárias + terciárias…', 'Futebol · Basquete · Hóquei · MMA · Ténis');
 
-    // Carrega sempre fresh para palpites (para ter todos os mercados incluindo alternates/btts)
-    const PALPITES_MARKETS = 'h2h,spreads,totals,h2h_lay,btts,alternate_spreads,alternate_totals';
+    // ── 1. SEMPRE fresh load — ligas top + secundárias + terciárias ──
+    // Mercados: h2h + spreads + totals + totals alternativos + btts
+    // NÃO inclui h2h_lay por padrão para evitar que dominem os palpites
+    const PALPITES_MARKETS = 'h2h,spreads,totals,btts,alternate_spreads,alternate_totals';
     const PAL_SPORTS = [
-      // Top (sempre)
-      {k:'soccer_epl',n:'Premier League',i:'⚽',c:'Soccer'},
-      {k:'soccer_spain_la_liga',n:'La Liga',i:'⚽',c:'Soccer'},
-      {k:'soccer_italy_serie_a',n:'Serie A',i:'⚽',c:'Soccer'},
-      {k:'soccer_germany_bundesliga',n:'Bundesliga',i:'⚽',c:'Soccer'},
-      {k:'soccer_france_ligue_one',n:'Ligue 1',i:'⚽',c:'Soccer'},
-      {k:'soccer_uefa_champs_league',n:'Champions League',i:'⚽',c:'Soccer'},
-      // Secundárias
-      {k:'soccer_portugal_primeira_liga',n:'Primeira Liga',i:'⚽',c:'Soccer'},
-      {k:'soccer_netherlands_eredivisie',n:'Eredivisie',i:'⚽',c:'Soccer'},
-      {k:'soccer_belgium_first_div',n:'Jupiler Pro',i:'⚽',c:'Soccer'},
-      {k:'soccer_turkey_super_league',n:'Süper Lig',i:'⚽',c:'Soccer'},
-      {k:'soccer_england_efl_champ',n:'Championship',i:'⚽',c:'Soccer'},
-      {k:'soccer_spain_segunda_division',n:'Segunda',i:'⚽',c:'Soccer'},
-      {k:'soccer_germany_liga2',n:'2. Bundesliga',i:'⚽',c:'Soccer'},
-      {k:'soccer_italy_serie_b',n:'Serie B',i:'⚽',c:'Soccer'},
-      // Outros desportos
-      {k:'basketball_nba',n:'NBA',i:'🏀',c:'Basketball'},
-      {k:'basketball_euroleague',n:'Euroliga',i:'🏀',c:'Basketball'},
-      {k:'icehockey_nhl',n:'NHL',i:'🏒',c:'Hockey'},
-      {k:'baseball_mlb',n:'MLB',i:'⚾',c:'Baseball'},
-      {k:'mma_mixed_martial_arts',n:'UFC/MMA',i:'🥊',c:'Combat'},
+      {k:'soccer_epl',              n:'Premier League',  i:'⚽', tier:1},
+      {k:'soccer_spain_la_liga',    n:'La Liga',         i:'⚽', tier:1},
+      {k:'soccer_italy_serie_a',    n:'Serie A',         i:'⚽', tier:1},
+      {k:'soccer_germany_bundesliga',n:'Bundesliga',     i:'⚽', tier:1},
+      {k:'soccer_france_ligue_one', n:'Ligue 1',         i:'⚽', tier:1},
+      {k:'soccer_uefa_champs_league',n:'Champions',      i:'⚽', tier:1},
+      {k:'soccer_portugal_primeira_liga',n:'Primeira Liga',i:'⚽',tier:2},
+      {k:'soccer_netherlands_eredivisie',n:'Eredivisie', i:'⚽', tier:2},
+      {k:'soccer_belgium_first_div', n:'Jupiler Pro',    i:'⚽', tier:2},
+      {k:'soccer_turkey_super_league',n:'Süper Lig',     i:'⚽', tier:2},
+      {k:'soccer_england_efl_champ', n:'Championship',   i:'⚽', tier:2},
+      {k:'soccer_spain_segunda_division',n:'Segunda Div',i:'⚽', tier:3},
+      {k:'soccer_germany_liga2',     n:'2. Bundesliga',  i:'⚽', tier:3},
+      {k:'soccer_italy_serie_b',     n:'Serie B',        i:'⚽', tier:3},
+      {k:'soccer_france_ligue_two',  n:'Ligue 2',        i:'⚽', tier:3},
+      {k:'soccer_england_league1',   n:'ENG League One', i:'⚽', tier:3},
+      {k:'basketball_nba',           n:'NBA',            i:'🏀', tier:1},
+      {k:'basketball_euroleague',    n:'Euroliga',       i:'🏀', tier:2},
+      {k:'icehockey_nhl',            n:'NHL',            i:'🏒', tier:1},
+      {k:'baseball_mlb',             n:'MLB',            i:'⚾', tier:1},
+      {k:'mma_mixed_martial_arts',   n:'UFC/MMA',        i:'🥊', tier:1},
     ];
+
     const pData = [];
+    let loaded = 0;
     for(const s of PAL_SPORTS){
+      loaded++;
+      setStep(
+        `📡 A carregar odds… (${loaded}/${PAL_SPORTS.length})`,
+        `${s.i} ${s.n} — ${pData.length} jogos encontrados`
+      );
       const d = await apiOdds(s.k, PALPITES_MARKETS);
-      if(d && d.length){ d.forEach(g=>{g._sn=s.n;g._si=s.i;g._sk=s.k;}); pData.push(...d); }
-      await sleep(200);
+      if(d && d.length){
+        d.forEach(g=>{ g._sn=s.n; g._si=s.i; g._sk=s.k; g._tier=s.tier||1; });
+        pData.push(...d);
+      }
+      await sleep(150);
     }
-    if(pData.length) G.allData = [...G.allData.filter(g=>!pData.find(p=>p.id===g.id)), ...pData];
+
+    // Sempre substitui com dados frescos
+    G.allData = pData;
     if(!G.allData.length) throw new Error('Sem dados de odds. Verifica a chave API e tenta de novo.');
-    toast(G.allData.length + ' jogos carregados de ' + PAL_SPORTS.length + ' ligas', 's');
 
     const d=$('dot-odds'); if(d) d.style.background='var(--green)';
+    toast(G.allData.length + ' jogos · ' + PAL_SPORTS.length + ' ligas carregadas', 's');
 
-    // ── 2. Calcular EV ──
-    setStep('🧮 A calcular Expected Value…', `${G.allData.length} jogos · ${mktNames}`);
-    await sleep(300);
-    const allEV = findEV(G.allData, 0.5); // calcula EV para referência
-    if(G.allData.length < 2) throw new Error('Sem jogos suficientes. Carrega desportos na página +EV primeiro.');
+    // ── 2. Calcular EV (referência) ──
+    setStep('🧮 A calcular EV e linhas alternativas…', `${G.allData.length} jogos de ${PAL_SPORTS.length} ligas`);
+    await sleep(200);
+    const allEV = findEV(G.allData, 0.3);
 
     // ── 3. Clima para os primeiros jogos ──
     setStep('🌤 A verificar condições climáticas…', 'Open Meteo — gratuito, sem chave');
@@ -1717,238 +1727,300 @@ async function loadPalpites() {
 // Diversidade de jogos, mercados e odds equilibradas
 // ══════════════════════════════════════════════
 function buildPalpitesAlgo(allEV, weather, mktNames) {
-  /* ═══════════════════════════════════════════════════════════
-     ESTRATÉGIA MELHORADA:
-     1. Para cada jogo com EV+, procura linhas alternativas mais seguras
-        ex: Over 219 @ 1.96 → Over 215.5 @ 1.58 (menor risco)
-     2. Inclui BTTS, alternate_totals, alternate_spreads
-     3. Ligas secundárias e terciárias têm mais valor
-     4. Filtra odds 1.45–1.97 (alta probabilidade para acumuladores)
-  ══════════════════════════════════════════════════════════════ */
+  /* ════════════════════════════════════════════════════════
+     REGRAS DO BILHETE COMBINADO:
+     ✅ Odds alvo: 1.45 – 1.97 por selecção
+     ✅ Jogos DIFERENTES em cada leg
+     ✅ Máximo 1 leg de h2h_lay por bilhete
+     ✅ Máximo 2 legs do mesmo mercado (ex: 2 totals OK, 3 não)
+     ✅ Máximo 1 leg do mesmo desporto (exceto se sem alternativa)
+     ✅ Prefere: totals alternativos > BTTS > h2h > spreads > lay
+     ✅ Bonus para ligas secundárias/terciárias (mais valor)
+     ✅ Procura linhas mais seguras dentro do mesmo jogo
+  ════════════════════════════════════════════════════════ */
 
   const sharp = ['pinnacle','betfair_ex_eu','betfair','smarkets','matchbook'];
-  const allBets = [];
 
-  // Tier bonus: ligas secundárias/terciárias têm mais valor de mercado
-  function getTierBonus(sport) {
-    const s = SPORTS.find(x => x.k === sport);
-    if (!s) return 0;
-    return s.tier === 3 ? 1.5 : s.tier === 2 ? 0.8 : 0;
+  // Tier bonus por liga
+  function getTierBonus(sk) {
+    const s = SPORTS.find(x => x.k === sk);
+    const t = s?.tier || (sk && (sk.includes('liga2') || sk.includes('serie_b') || sk.includes('ligue_two') || sk.includes('league1') || sk.includes('segunda')) ? 3 : 1);
+    return t === 3 ? 2.0 : t === 2 ? 1.0 : 0;
   }
 
-  // Friendly market names
-  function mktLabel(key, point) {
+  // Market group para controlo de diversidade
+  function mktGroup(key) {
+    if (key === 'h2h_lay') return 'lay';
+    if (key === 'h2h' || key === 'h2h_3way') return 'moneyline';
+    if (key === 'btts') return 'btts';
+    if (key === 'spreads' || key === 'alternate_spreads') return 'spread';
+    if (key === 'totals' || key === 'alternate_totals') return 'total';
+    return 'other';
+  }
+
+  // Market priority (lower = preferred)
+  function mktPriority(key) {
+    if (key === 'alternate_totals') return 1; // ← melhor: linha segura
+    if (key === 'totals') return 2;
+    if (key === 'btts') return 3;
+    if (key === 'alternate_spreads') return 4;
+    if (key === 'h2h' || key === 'h2h_3way') return 5;
+    if (key === 'spreads') return 6;
+    if (key === 'h2h_lay') return 10; // ← último recurso
+    return 7;
+  }
+
+  function mktLabel(key, point, outName) {
     if (key === 'h2h' || key === 'h2h_3way') return 'Moneyline';
     if (key === 'h2h_lay') return 'Lay';
     if (key === 'btts') return 'BTTS';
-    if (key === 'spreads' || key === 'alternate_spreads') {
-      return point != null ? 'Handicap ' + (point > 0 ? '+' : '') + point : 'Handicap';
-    }
+    if (key === 'spreads' || key === 'alternate_spreads')
+      return 'Handicap' + (point != null ? ' ' + (point > 0 ? '+' : '') + point : '');
     if (key === 'totals' || key === 'alternate_totals') {
-      return point != null ? ('Over/Under ' + Math.abs(point)) : 'Over/Under';
+      const dir = outName?.toLowerCase().includes('over') ? 'Over' : 'Under';
+      return dir + (point != null ? ' ' + Math.abs(point) : '');
     }
-    if (key.includes('player')) return 'Player Prop';
     return key;
   }
 
+  // ── Extrai todas as apostas válidas ──
+  const allBets = [];
+
   G.allData.forEach(game => {
-    // ── Coleta todos os mercados do jogo ──
-    // Agrupa totals/alternate_totals por linha para comparar
-    const totalsByLine = {}; // line → {best_odd, book, ev, ...}
+    // Mapeia todas as linhas totals por direcção para encontrar linhas alternativas seguras
+    const overLines = [];  // [{key, point, price, fair, ev, book}]
 
     game.bookmakers?.forEach(bm => {
       bm.markets?.forEach(mkt => {
         mkt.outcomes?.forEach(out => {
           const price = out.price;
-          if (!price || price < 1.38 || price > 2.05) return;
+          if (!price || price < 1.40 || price > 2.05) return;
 
-          // Fair odd via devig
-          const refBm = game.bookmakers.find(b => sharp.includes(b.key)) || game.bookmakers[0];
+          // Calcula fair odd via devig
+          const refBm = game.bookmakers.find(b => sharp.includes(b.key))
+            || game.bookmakers.sort((a,b) => (b.markets?.length||0) - (a.markets?.length||0))[0];
           const refMkt = refBm?.markets?.find(m => m.key === mkt.key);
           let fair = null;
-          if (refMkt) {
+          if (refMkt && refMkt.outcomes.length >= 2) {
             const tp = refMkt.outcomes.reduce((s, o) => s + 1/o.price, 0);
-            const refO = refMkt.outcomes.find(o => o.name === out.name && o.point === out.point);
-            if (refO) fair = 1 / ((1/refO.price) / tp);
+            const refO = refMkt.outcomes.find(o =>
+              o.name === out.name && (o.point == null || o.point === out.point)
+            );
+            if (refO && tp > 0) fair = 1 / ((1/refO.price) / tp);
           }
-          if (!fair) fair = price * 1.025;
+          if (!fair || fair <= 1) fair = price * 1.025;
 
           const ev = calcEV(price, fair);
-          const kelly = calcKelly(price, fair);
+          const kelly = Math.max(0, calcKelly(price, fair));
           const prob = (1/fair) * 100;
 
-          // Avg price
+          // Avg price across books
           let prices = [];
           game.bookmakers.forEach(b2 => {
-            const m2 = b2.markets?.find(mk => mk.key === mkt.key);
-            m2?.outcomes?.forEach(o2 => {
+            b2.markets?.find(m => m.key === mkt.key)?.outcomes?.forEach(o2 => {
               if (o2.name === out.name && o2.point === out.point) prices.push(o2.price);
             });
           });
-          const avgOdds = prices.length ? prices.reduce((a,b) => a+b) / prices.length : price;
+          const avgOdds = prices.length ? prices.reduce((a,b)=>a+b)/prices.length : price;
 
-          let label = out.name;
-          if (out.point != null) label += ' ' + (out.point > 0 ? '+' : '') + out.point;
-
-          // For totals: track by line to find safer alternatives
-          const isTotals = mkt.key === 'totals' || mkt.key === 'alternate_totals';
+          const label = mktLabel(mkt.key, out.point, out.name);
           const isOver = out.name?.toLowerCase().includes('over');
+          const isTotals = mkt.key === 'totals' || mkt.key === 'alternate_totals';
 
-          const bet = {
-            game: `${game.home_team} vs ${game.away_team}`,
+          // Track over lines for alt-line analysis
+          if (isTotals && isOver && out.point != null) {
+            overLines.push({ key: mkt.key, point: out.point, price, fair, ev, book: bm.title });
+          }
+
+          allBets.push({
+            game: game.home_team + ' vs ' + game.away_team,
             home: game.home_team, away: game.away_team,
             sport: game._sn || '', icon: game._si || '⚽',
             sportKey: game._sk || '',
-            mkt: mktLabel(mkt.key, out.point),
-            mktKey: mkt.key,
-            mktRaw: mkt.key,
-            outcome: label,
+            mkt: label, mktKey: mkt.key,
+            mktGroup: mktGroup(mkt.key),
+            mktPrio: mktPriority(mkt.key),
+            outcome: (out.name || '') + (out.point != null ? ' ' + (out.point > 0 ? '+' : '') + out.point : ''),
             book: bm.title,
             odds: price, avgOdds, fair: fair.toFixed(2),
             ev: ev.toFixed(2), kelly: kelly.toFixed(2),
-            prob,
-            time: game.commence_time,
+            prob, time: game.commence_time,
             point: out.point ?? null,
-            isOver, isTotals,
             isBTTS: mkt.key === 'btts',
+            isLay: mkt.key === 'h2h_lay',
             isAlt: mkt.key.startsWith('alternate_'),
-            tierBonus: getTierBonus(game._sk),
-          };
-
-          // Track totals by line for alternate-line analysis
-          if (isTotals && isOver && out.point != null) {
-            const lineKey = game.id + '|' + out.point;
-            if (!totalsByLine[lineKey] || price > totalsByLine[lineKey].price) {
-              totalsByLine[lineKey] = { price, fair, ev, bet };
-            }
-          }
-
-          allBets.push(bet);
+            tierBonus: getTierBonus(game._sk || ''),
+            isAltSafeLine: false,
+            altLineNote: '',
+          });
         });
       });
     });
 
-    // ── Encontra linhas alternativas seguras para totals ──
-    // Se temos Over 219 @ 1.96, procura Over 215.5 ou 214.5 @ ~1.58
-    const gameLines = Object.values(totalsByLine)
-      .filter(l => l.price >= 1.45 && l.price <= 2.05)
-      .sort((a, b) => b.bet.point - a.bet.point); // maior linha primeiro
-
-    if (gameLines.length >= 2) {
-      // Marca as linhas mais baixas como "linha alternativa segura"
-      gameLines.forEach((l, idx) => {
-        if (idx > 0) { // não é a linha mais alta
-          const hLine = gameLines[0];
-          if (l.bet.point < hLine.bet.point && l.bet.odds < 1.82) {
-            // Encontrou linha mais baixa e mais segura
-            const found = allBets.find(b =>
-              b.game === l.bet.game &&
-              b.point === l.bet.point &&
-              b.isOver
-            );
-            if (found) {
-              found.isAltSafeLine = true;
-              found.altLineNote = 'Linha mais segura vs ' + hLine.bet.mkt + ' @ ' + hLine.bet.odds;
-            }
+    // ── Marca linhas alternativas mais seguras ──
+    // Ex: se Over 219 @ 1.96 e Over 215.5 @ 1.62 existem, o 215.5 é "linha segura"
+    if (overLines.length >= 2) {
+      overLines.sort((a, b) => b.point - a.point); // maior linha primeiro
+      const topLine = overLines[0];
+      overLines.forEach(l => {
+        if (l.point < topLine.point && l.price <= 1.85 && l.price >= 1.45) {
+          // Encontrou linha inferior e mais segura
+          const bet = allBets.find(b =>
+            b.home === game.home_team &&
+            b.point === l.point &&
+            b.outcome.toLowerCase().startsWith('over')
+          );
+          if (bet) {
+            bet.isAltSafeLine = true;
+            bet.altLineNote = 'Linha segura vs ' + mktLabel(topLine.key, topLine.point, 'Over') + ' @ ' + topLine.price.toFixed(2);
           }
         }
       });
     }
   });
 
-  if (allBets.length === 0) throw new Error('Sem apostas no intervalo de odds 1.45–2.05 nas ligas carregadas.');
+  if (allBets.length === 0)
+    throw new Error('Sem apostas disponíveis (1.40–2.05). A API pode não ter retornado dados. Verifica a chave e tenta de novo.');
 
-  // ── Score: EV+ > linhas alternativas seguras > prob alta > ligas secundárias ──
+  // ── Score ──
   function score(b) {
     const ev = parseFloat(b.ev);
     const prob = b.prob;
     const w = weather[b.game];
-    const wInfo = w?.current?.weather_code !== undefined ? wCode(w.current.weather_code) : null;
-    const wPenalty = wInfo ? wInfo.r * 0.4 : 0;
-    const oddsDist = Math.abs(b.odds - 1.70); // ideal ~1.70
-    const evBonus = ev > 2 ? ev * 2.5 : ev > 0 ? ev * 1.5 : ev * 0.3;
-    const altBonus = b.isAltSafeLine ? 3 : 0; // bonus para linhas seguras
-    const bttsBonus = b.isBTTS && ev > 0 ? 1.5 : 0;
-    const tierBonus = b.tierBonus || 0;
-    return evBonus + (prob * 0.06) - (oddsDist * 1.2) + altBonus + bttsBonus + tierBonus - wPenalty;
+    const wPenalty = (w?.current?.weather_code !== undefined)
+      ? wCode(w.current.weather_code).r * 0.5 : 0;
+
+    // Odds ideais: 1.55–1.80 para acumuladores seguros
+    const oddsIdeal = b.odds >= 1.55 && b.odds <= 1.80 ? 2.0
+      : b.odds >= 1.45 && b.odds <= 1.95 ? 0.5 : -1.0;
+
+    const evScore  = ev > 3 ? ev * 2.5 : ev > 0 ? ev * 1.5 : ev * 0.2;
+    const altBonus = b.isAltSafeLine ? 4.0 : 0;  // ← linhas mais seguras ganham prioridade
+    const bttsBonus = b.isBTTS && ev > 0 ? 2.0 : 0;
+    const layPenalty = b.isLay ? -3.0 : 0;       // ← penaliza lay (apenas como fallback)
+    const mktBonus = (b.mktPrio <= 3) ? 2.0 : (b.mktPrio <= 5) ? 0.5 : 0;
+
+    return evScore
+      + (prob * 0.05)
+      + oddsIdeal
+      + altBonus
+      + bttsBonus
+      + layPenalty
+      + mktBonus
+      + (b.tierBonus * 0.8)
+      - wPenalty;
   }
 
-  // ── Remove duplicados (mesmo jogo+mercado+linha, fica a melhor odd) ──
+  // ── Remove duplicados (mesmo jogo + mercado + outcome) ──
   const bestMap = new Map();
   allBets.forEach(b => {
     const key = b.game + '|' + b.mktKey + '|' + b.outcome;
     const ex = bestMap.get(key);
     if (!ex || b.odds > ex.odds) bestMap.set(key, b);
   });
+
   const candidates = [...bestMap.values()].sort((a, b) => score(b) - score(a));
 
-  // ── Seleciona N legs com jogos DIFERENTES e mercados diversificados ──
+  // ── Seleciona N legs com diversidade forçada ──
   function selectLegs(n) {
-    const usedGames = new Set();
-    const selected = [];
+    const usedGames   = new Set();
+    const usedSports  = new Map(); // sport → count
+    const usedMktGrps = new Map(); // group → count
+    const selected    = [];
+
+    const MAX_LAY     = 1;  // máximo 1 lay por bilhete
+    const MAX_SAME_MKT = 2; // máximo 2 do mesmo grupo de mercado
+    const MAX_SAME_SPORT = 2; // máximo 2 do mesmo desporto
+
     for (const bet of candidates) {
       if (selected.length >= n) break;
       if (usedGames.has(bet.game)) continue;
+
+      const layCount    = selected.filter(s => s.isLay).length;
+      const mktGrpCount = usedMktGrps.get(bet.mktGroup) || 0;
+      const sportCount  = usedSports.get(bet.sport) || 0;
+
+      // Regras de diversidade
+      if (bet.isLay && layCount >= MAX_LAY) continue;
+      if (mktGrpCount >= MAX_SAME_MKT) continue;
+      if (sportCount >= MAX_SAME_SPORT) continue;
+
       usedGames.add(bet.game);
+      usedMktGrps.set(bet.mktGroup, mktGrpCount + 1);
+      usedSports.set(bet.sport, sportCount + 1);
       selected.push(bet);
+    }
+
+    // Fallback: se não chegou a N, relaxa restrição de desporto
+    if (selected.length < n) {
+      for (const bet of candidates) {
+        if (selected.length >= n) break;
+        if (usedGames.has(bet.game)) continue;
+        const layCount    = selected.filter(s => s.isLay).length;
+        const mktGrpCount = usedMktGrps.get(bet.mktGroup) || 0;
+        if (bet.isLay && layCount >= MAX_LAY) continue;
+        if (mktGrpCount >= MAX_SAME_MKT) continue;
+        usedGames.add(bet.game);
+        usedMktGrps.set(bet.mktGroup, (usedMktGrps.get(bet.mktGroup)||0) + 1);
+        selected.push(bet);
+      }
     }
     return selected;
   }
 
   // ── Monta ticket ──
   function buildTicket(legs, type) {
-    const totalOdds = legs.reduce((p, l) => p * l.odds, 1);
-    const totalAvg  = legs.reduce((p, l) => p * (l.avgOdds || l.odds), 1);
-    const combinedProb = legs.reduce((p, l) => p * (l.prob / 100), 1) * 100;
-    const evPos = legs.filter(l => parseFloat(l.ev) > 0).length;
-    const avgEV = (legs.reduce((s, l) => s + parseFloat(l.ev), 0) / legs.length).toFixed(1);
-    const confidence = combinedProb >= 50 ? 'Alta' : combinedProb >= 36 ? 'Média-Alta' : combinedProb >= 24 ? 'Média' : 'Baixa';
-    const mktsUsed = [...new Set(legs.map(l => l.mkt))];
-    const leaguesUsed = [...new Set(legs.map(l => l.sport))];
+    const totalOdds  = legs.reduce((p, l) => p * l.odds, 1);
+    const totalAvg   = legs.reduce((p, l) => p * (l.avgOdds || l.odds), 1);
+    const combProb   = legs.reduce((p, l) => p * (l.prob/100), 1) * 100;
+    const evPos      = legs.filter(l => parseFloat(l.ev) > 0).length;
+    const avgEV      = (legs.reduce((s, l) => s + parseFloat(l.ev), 0) / legs.length).toFixed(1);
+    const confidence = combProb >= 50 ? 'Alta' : combProb >= 36 ? 'Média-Alta' : combProb >= 24 ? 'Média' : 'Baixa';
+    const mktsUsed   = [...new Set(legs.map(l => l.mkt))];
+    const leagues    = [...new Set(legs.map(l => l.sport))];
 
     const analysis =
-      `Bilhete ${type}: ${leaguesUsed.join(', ')}. ` +
-      `${evPos}/${legs.length} selecções com EV+. ` +
-      `Prob. combinada estimada: ~${combinedProb.toFixed(0)}%. ` +
-      `Mercados: ${mktsUsed.join(' + ')}.`;
+      type + ': ' + leagues.join(', ') + '. ' +
+      evPos + '/' + legs.length + ' selecções EV+. ' +
+      'Prob. combinada ~' + combProb.toFixed(0) + '%. ' +
+      'Mercados: ' + mktsUsed.join(' + ') + '.';
 
     return {
       legs: legs.map(l => {
         const ev = parseFloat(l.ev);
-        const w = weather[l.game];
+        const w  = weather[l.game];
         const wInfo = w?.current?.weather_code !== undefined ? wCode(w.current.weather_code) : null;
-        const wText = wInfo && wInfo.r >= 2 ? ' ⚠️ ' + wInfo.t + ' pode influenciar.' : '';
-        const altText = l.isAltSafeLine && l.altLineNote ? ' 🔽 ' + l.altLineNote + '.' : '';
-        const tierText = l.tierBonus > 0 ? ' 📊 Liga secundária — maior valor de mercado.' : '';
-        const evText = ev > 3 ? 'Edge forte de +' + l.ev + '% vs fair ' + l.fair + '.'
-          : ev > 0 ? 'Vantagem de +' + l.ev + '% sobre o mercado.'
-          : 'Aposta de alta probabilidade (' + l.prob.toFixed(0) + '% estimado).';
+        const wTxt  = wInfo && wInfo.r >= 2 ? ' ⚠️ ' + wInfo.t + ' pode influenciar.' : '';
+        const altTxt = l.isAltSafeLine && l.altLineNote ? ' 🔽 ' + l.altLineNote + '.' : '';
+        const tierTxt = l.tierBonus > 0 ? ' 📊 Liga ' + (l.tierBonus >= 2 ? 'terciária' : 'secundária') + ' — maior valor.' : '';
+        const evTxt = ev > 3 ? 'Edge forte +' + l.ev + '% vs fair ' + l.fair + '.'
+          : ev > 0 ? 'Vantagem +' + l.ev + '% sobre o mercado.'
+          : 'Alta probabilidade estimada (' + l.prob.toFixed(0) + '%).';
         return {
-          pick: l.outcome,
-          game: l.game, home: l.home, away: l.away,
+          pick: l.outcome, game: l.game,
+          home: l.home, away: l.away,
           sport: l.sport, icon: l.icon,
           market: l.mkt, market_key: l.mktKey,
           bookmaker: l.book,
           odds_best: parseFloat(l.odds).toFixed(2),
           odds_avg:  parseFloat(l.avgOdds || l.odds).toFixed(2),
           fair_odd:  l.fair,
-          ev_pct:    l.ev,
-          kelly_pct: l.kelly,
+          ev_pct: l.ev, kelly_pct: l.kelly,
           prob_real: l.prob.toFixed(1),
           is_alt_line: !!l.isAltSafeLine,
           is_btts: !!l.isBTTS,
+          is_lay: !!l.isLay,
           tier_bonus: l.tierBonus > 0,
-          reasoning: evText + altText + tierText + wText,
+          reasoning: evTxt + altTxt + tierTxt + wTxt,
           weather_info: wInfo ? wInfo.i + '|' + wInfo.t + '|' + (w.current.temperature_2m?.toFixed(0)||'?') : null,
           game_time: l.time || null,
         };
       }),
       total_odds_best: totalOdds.toFixed(2),
       total_odds_avg:  totalAvg.toFixed(2),
-      combined_prob:   combinedProb.toFixed(1),
+      combined_prob:   combProb.toFixed(1),
       combined_ev:     avgEV,
-      confidence,
-      analysis,
+      confidence, analysis,
       mkts_used: mktsUsed,
     };
   }
@@ -1957,9 +2029,9 @@ function buildPalpitesAlgo(allEV, weather, mktNames) {
   const tripLegs = selectLegs(3);
 
   if (dupLegs.length < 2)
-    throw new Error('Apenas ' + dupLegs.length + ' jogo(s) disponíveis. Verifica a chave API e tenta de novo.');
+    throw new Error('Apenas ' + dupLegs.length + ' jogo(s) disponíveis com odds 1.40–2.05. Sem jogos hoje nessas ligas.');
   if (tripLegs.length < 3)
-    throw new Error('Apenas ' + tripLegs.length + ' jogo(s) disponíveis para Tripla. Carrega mais ligas.');
+    throw new Error('Apenas ' + tripLegs.length + ' jogo(s) para Tripla. Carrega mais ligas na secção +EV.');
 
   return { dupla: buildTicket(dupLegs, 'Dupla'), tripla: buildTicket(tripLegs, 'Tripla') };
 }
@@ -2046,6 +2118,7 @@ function renderPalpites(picks, weather, mktNames) {
             <span class="leg-mkt">${leg.market}</span>
             ${leg.is_alt_line ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:4px;padding:1px 7px;font-size:.6rem;font-weight:700;color:var(--yellow)"><i class=\"fas fa-shield-alt\"></i>LINHA SEGURA</span>' : ''}
             ${leg.is_btts ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);border-radius:4px;padding:1px 7px;font-size:.6rem;font-weight:700;color:var(--purple)"><i class=\"fas fa-futbol\"></i>BTTS</span>' : ''}
+            ${leg.is_lay ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,168,232,.1);border:1px solid rgba(0,168,232,.3);border-radius:4px;padding:1px 7px;font-size:.6rem;font-weight:700;color:var(--blue)"><i class=\"fas fa-exchange-alt\"></i>LAY</span>' : ''}
             ${leg.tier_bonus ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:4px;padding:1px 7px;font-size:.6rem;font-weight:700;color:var(--gold)">💎 +VALOR</span>' : ''}
           </div>
           <!-- Meta row -->
