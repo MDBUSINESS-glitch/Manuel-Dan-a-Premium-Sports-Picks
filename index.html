@@ -979,6 +979,8 @@ const BK_CLR = {
   '888sport':'#f97316',betclic:'#c62828',smarkets:'#7b1fa2',ladbrokes:'#004c97',
 };
 
+const G_TICKETS = {}; // stores generated tickets by key to avoid inline JSON issues
+
 const G = {
   fmt:'am', page:'ev', mkt:'h2h', period:'m',
   allData:[], ev:[], evTab:'pre',
@@ -2062,6 +2064,8 @@ function renderPalpites(picks, weather, mktNames) {
 
   const renderTicket = (ticket, type) => {
     if (!ticket) return '';
+    // Store ticket globally for safe onclick access
+    G_TICKETS[type] = ticket;
     const isDupla = type === 'dupla';
     const typeCls = isDupla ? 'tb-dupla' : 'tb-tripla';
     const typeLabel = isDupla ? 'DUPLA DO DIA' : 'TRIPLA DO DIA';
@@ -2245,7 +2249,7 @@ function renderPalpites(picks, weather, mktNames) {
             <i class="fab fa-whatsapp" style="color:#25d366"></i>Partilhar
           </a>
           <button class="btn btn-blue" style="font-size:.74rem"
-            onclick="addTicketToTracker('${type.toUpperCase()}',${JSON.stringify(ticket).replace(/\\/g,'\\\\').replace(/'/g,"&#39;").replace(/"/g,'&quot;')})">
+            onclick="addTicketToTrackerKey('${type}')">
             <i class="fas fa-plus"></i>Tracker
           </button>
         </div>
@@ -2263,6 +2267,12 @@ function renderPalpites(picks, weather, mktNames) {
     </div>`;
 }
 
+
+function addTicketToTrackerKey(type) {
+  const ticket = G_TICKETS[type];
+  if (!ticket) { toast('Ticket não encontrado','e'); return; }
+  addTicketToTracker(type.toUpperCase(), ticket);
+}
 
 function addTicketToTracker(type,ticket) {
   const bets=getBets();
