@@ -2590,8 +2590,10 @@ function registerTicketToTracker() {
   saveBets(bets);
   renderTracker();
   closeModal();
-  toast(type + ' registada no Tracker! ✅', 's');
   window._pendingTicket = null;
+  // Navigate to Bet Tracker so user sees the new entry
+  toast(type + ' adicionada ao Tracker! ✅', 's');
+  setTimeout(() => go('tracker'), 300);
 }
 
 
