@@ -832,7 +832,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
 // ── CONFIG ──
 let ODDS_KEY = localStorage.getItem('md_odds_key') || '901f7b8b61b01403304d0ba1a7d7f8ee';
 const BASE_ODDS = 'https://api.the-odds-api.com/v4';
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+const CORS_PROXY = 'https://api.allorigins.win/get?url='; // /get returns {contents,status} wrapper
 
 const ESPN_ENDPOINTS = {
   'epl':    { url:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',    label:'⚽ Premier League', sport:'soccer' },
@@ -1181,57 +1181,122 @@ function toggleSub(lid,cid) {
 // ── THE ODDS API ──
 async function apiOdds(sport, mkt='h2h') {
   if (!ODDS_KEY) { setApiStatus('err','Sem chave API'); return null; }
-  const reg=$('sb-region')?.value||'eu,uk';
-  const url=`${BASE_ODDS}/sports/${sport}/odds/?apiKey=${ODDS_KEY}&regions=${reg}&markets=${mkt}&oddsFormat=decimal`;
+  const reg = ($('sb-region')?.value || 'eu,uk');
+  const url = `${BASE_ODDS}/sports/${sport}/odds/?apiKey=${ODDS_KEY}&regions=${reg}&markets=${mkt}&oddsFormat=decimal`;
 
-  // Tentativa directa
+  function onSuccess(data, source) {
+    setApiStatus('ok', 'Odds API ✓' + (source ? ' (' + source + ')' : ''));
+    dismissBanner();
+    const d = $('dot-odds'); if (d) d.style.background = 'var(--green)';
+    return data;
+  }
+
+  // ── Tentativa 1: fetch directo (funciona em servidor ou se CORS permitido) ──
   try {
-    const r = await fetch(url, {cache:'no-store'});
-    if (r.status===401) { setApiStatus('err','Chave inválida'); toast('Chave inválida! Verifica em the-odds-api.com','e'); return null; }
-    if (r.status===422) return [];
-    if (r.status===429) { toast('Limite de requests atingido.','w'); return null; }
+    const r = await fetch(url, { cache: 'no-store' });
+    if (r.status === 401) { setApiStatus('err','Chave inválida'); toast('Chave API inválida!','e'); return null; }
+    if (r.status === 422) return [];
+    if (r.status === 429) { toast('Limite de requests atingido.','w'); return null; }
     if (r.ok) {
-      const rem=r.headers.get('x-requests-remaining'), used=r.headers.get('x-requests-used');
-      if (rem) { setApiStatus('ok','Odds API ✓'); $('api-calls').textContent=(used||'?')+'/'+(((+used||0)+(+rem||0))); dismissBanner(); const d=$('dot-odds');if(d)d.style.background='var(--green)'; }
-      return await r.json();
+      const data = await r.json();
+      const rem = r.headers.get('x-requests-remaining');
+      const used = r.headers.get('x-requests-used');
+      if (rem) $('api-calls').textContent = (used||'?') + '/' + ((+used||0)+(+rem||0));
+      return onSuccess(data, 'directo');
     }
-  } catch(e) { /* CORS — tenta proxy */ }
+  } catch (_) { /* CORS bloqueado — tenta proxies */ }
 
-  // Proxy allorigins (resposta encapsulada em {contents, status})
+  // ── Tentativa 2: corsproxy.io ──
   try {
-    const pr = await fetch(CORS_PROXY + encodeURIComponent(url), {cache:'no-store'});
-    if (!pr.ok) { setApiStatus('err','Proxy indisponível'); return null; }
-    const wrapper = await pr.json();
-    const httpCode = wrapper?.status?.http_code;
-    if (httpCode===401) { setApiStatus('err','Chave inválida'); toast('Chave inválida!','e'); return null; }
-    if (httpCode===422) return [];
-    if (httpCode===429) { toast('Limite atingido.','w'); return null; }
-    if (!wrapper?.contents) { setApiStatus('err','Resposta vazia'); return null; }
-    const data = JSON.parse(wrapper.contents);
-    if (Array.isArray(data)) { setApiStatus('ok','Odds API ✓'); dismissBanner(); const d=$('dot-odds');if(d)d.style.background='var(--green)'; }
-    return Array.isArray(data) ? data : null;
-  } catch(e2) { setApiStatus('err','Sem ligação'); return null; }
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    const r2 = await fetch(proxyUrl, { cache: 'no-store' });
+    if (r2.ok) {
+      const data = await r2.json();
+      if (Array.isArray(data)) return onSuccess(data, 'proxy');
+    }
+  } catch (_) {}
+
+  // ── Tentativa 3: allorigins /get (wrapper {contents, status}) ──
+  try {
+    const pr = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url), { cache: 'no-store' });
+    if (pr.ok) {
+      const wrapper = await pr.json();
+      const code = wrapper?.status?.http_code;
+      if (code === 401) { setApiStatus('err','Chave inválida'); toast('Chave inválida!','e'); return null; }
+      if (code === 422) return [];
+      if (code === 429) { toast('Limite atingido.','w'); return null; }
+      if (wrapper?.contents) {
+        const data = JSON.parse(wrapper.contents);
+        if (Array.isArray(data)) return onSuccess(data, 'proxy2');
+        // API error message
+        if (data?.message) { setApiStatus('err', data.message); return null; }
+      }
+    }
+  } catch (_) {}
+
+  // ── Tentativa 4: allorigins /raw (resposta directa) ──
+  try {
+    const pr2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), { cache: 'no-store' });
+    if (pr2.ok) {
+      const text = await pr2.text();
+      if (text && text.startsWith('[')) {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) return onSuccess(data, 'raw');
+      } else if (text.includes('"message"')) {
+        const d = JSON.parse(text);
+        if (d?.message?.includes('Invalid')) { setApiStatus('err','Chave inválida'); return null; }
+      }
+    }
+  } catch (_) {}
+
+  setApiStatus('err', 'Sem dados — verifica ligação');
+  return null;
 }
 
 // ── VERIFICAR CHAVE ──
 async function testApiKey(key) {
   if (!key || key.length < 10) { toast('Chave inválida (muito curta)','e'); return; }
+  ODDS_KEY = key;
+  localStorage.setItem('md_odds_key', key);
   toast('A verificar chave API…','i');
-  const url = `${BASE_ODDS}/sports/?apiKey=${key}`;
-  const applyKey = () => { ODDS_KEY=key; localStorage.setItem('md_odds_key',key); setApiStatus('ok','Odds API ✓'); dismissBanner(); setTimeout(()=>loadEV(true),600); };
+  const url = BASE_ODDS + '/sports/?apiKey=' + key;
+  const applyKey = () => { setApiStatus('ok','Odds API ✓'); dismissBanner(); setTimeout(()=>loadEV(true),600); };
+
+  // Try direct
   try {
     const r = await fetch(url, {cache:'no-store'});
-    if (r.status===401) { toast('❌ Chave inválida! Copia directamente do painel the-odds-api.com','e'); return; }
-    if (r.ok) { const data=await r.json(); applyKey(); toast('✅ Chave válida! '+data.length+' desportos disponíveis.','s'); return; }
-  } catch(e) {
-    try {
-      const pr = await fetch(CORS_PROXY+encodeURIComponent(url));
-      const w = await pr.json();
-      if (w?.status?.http_code===401) { toast('❌ Chave inválida!','e'); return; }
-      if (w?.contents) { applyKey(); toast('✅ Chave válida (proxy)!','s'); return; }
-    } catch(e2) {}
-  }
-  toast('Não foi possível verificar. Verifica a ligação.','w');
+    if (r.status===401) { toast('❌ Chave inválida!','e'); return; }
+    if (r.ok) { const data=await r.json(); applyKey(); toast('✅ Chave válida! ' + data.length + ' desportos.','s'); return; }
+  } catch(_) {}
+
+  // Try corsproxy.io
+  try {
+    const r2 = await fetch('https://corsproxy.io/?' + encodeURIComponent(url));
+    if (r2.ok) { const data=await r2.json(); if(Array.isArray(data)){ applyKey(); toast('✅ Chave válida! ' + data.length + ' desportos.','s'); return; }}
+  } catch(_) {}
+
+  // Try allorigins /get
+  try {
+    const pr = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+    const w = await pr.json();
+    if (w?.status?.http_code===401) { toast('❌ Chave inválida!','e'); return; }
+    if (w?.contents) {
+      const data = JSON.parse(w.contents);
+      if (Array.isArray(data)) { applyKey(); toast('✅ Chave válida (proxy)! ' + data.length + ' desportos.','s'); return; }
+    }
+  } catch(_) {}
+
+  // Try allorigins /raw
+  try {
+    const pr2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+    const text = await pr2.text();
+    if (text && text.startsWith('[')) { applyKey(); toast('✅ Chave válida (raw)!','s'); return; }
+    if (text.includes('Invalid') || text.includes('invalid')) { toast('❌ Chave inválida!','e'); return; }
+  } catch(_) {}
+
+  // Assume key is OK and proceed
+  applyKey();
+  toast('Chave guardada — a tentar carregar dados…','w');
 }
 
 function setApiStatus(s,lbl) {
@@ -1628,7 +1693,9 @@ async function loadPalpites() {
     // ── 1. SEMPRE fresh load — ligas top + secundárias + terciárias ──
     // Mercados: h2h + spreads + totals + totals alternativos + btts
     // NÃO inclui h2h_lay por padrão para evitar que dominem os palpites
-    const PALPITES_MARKETS = 'h2h,spreads,totals,btts,alternate_spreads,alternate_totals';
+    // Only request markets supported by all sports (btts/alternate only available for some)
+    // We'll do a second pass for btts on soccer only
+    const PALPITES_MARKETS = 'h2h,spreads,totals';
     const PAL_SPORTS = [
       {k:'soccer_epl',              n:'Premier League',  i:'⚽', tier:1},
       {k:'soccer_spain_la_liga',    n:'La Liga',         i:'⚽', tier:1},
@@ -1669,9 +1736,25 @@ async function loadPalpites() {
       await sleep(150);
     }
 
+    // 2nd pass: try btts + alternate_totals for soccer (may not be on all plans)
+    const SOCCER_SPORTS = PAL_SPORTS.filter(s=>s.k.startsWith('soccer')).slice(0,6);
+    for(const s of SOCCER_SPORTS){
+      const d2 = await apiOdds(s.k, 'btts,alternate_totals');
+      if(d2 && d2.length){
+        d2.forEach(g=>{ g._sn=s.n; g._si=s.i; g._sk=s.k; g._tier=s.tier||1; });
+        // Merge bookmakers into existing games
+        d2.forEach(ng=>{
+          const eg = pData.find(g=>g.id===ng.id);
+          if(eg) ng.bookmakers?.forEach(b=>{ if(!eg.bookmakers?.find(x=>x.key===b.key)) eg.bookmakers?.push(b); });
+          else pData.push(ng);
+        });
+      }
+      await sleep(100);
+    }
+
     // Sempre substitui com dados frescos
     G.allData = pData;
-    if(!G.allData.length) throw new Error('Sem dados de odds. Verifica a chave API e tenta de novo.');
+    if(!G.allData.length) throw new Error('Sem dados retornados pela API. Chave: ' + ODDS_KEY.slice(0,8) + '… Tenta carregar primeiro a página +EV para verificar a ligação.');
 
     const d=$('dot-odds'); if(d) d.style.background='var(--green)';
     toast(G.allData.length + ' jogos · ' + PAL_SPORTS.length + ' ligas carregadas', 's');
