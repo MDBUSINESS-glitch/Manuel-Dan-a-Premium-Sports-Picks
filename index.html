@@ -479,6 +479,12 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
   .dep-kpi-row{grid-template-columns:1fr 1fr}
   .oj-kpi-grid{grid-template-columns:1fr 1fr}
 }
+
+/* ── Analytics Section ── */
+.ana-row{display:grid;grid-template-columns:110px 1fr 72px 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ana-row:last-child{border-bottom:none}
+.ana-bar-wrap{height:7px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.ana-bar{height:100%;border-radius:3px;transition:width .5s ease}
 </style>
 </head>
 <body>
@@ -861,6 +867,21 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
               <div style="font-size:.68rem;color:var(--t3)">Periodo: <strong id="tr-period-label" style="color:var(--t2)">--</strong></div>
             </div>
           </div>
+          <!-- Analytics -->
+          <div class="oj-section" id="trk-analytics-section" style="margin-bottom:12px">
+            <div class="oj-section-hdr" style="padding:10px 14px">
+              <span class="oj-section-title"><i class="fas fa-chart-pie" style="color:var(--blue);margin-right:6px"></i>Análise por Desporto & Mercado</span>
+              <div style="display:flex;gap:3px">
+                <button class="pt-btn active" id="ana-sport-btn" onclick="switchAnalytics('sport',this)">Desporto</button>
+                <button class="pt-btn" id="ana-mkt-btn" onclick="switchAnalytics('mkt',this)">Mercado</button>
+                <button class="pt-btn" id="ana-book-btn" onclick="switchAnalytics('book',this)">Casa</button>
+              </div>
+            </div>
+            <div id="trk-analytics-body" style="padding:10px 14px;min-height:80px">
+              <div class="empty" style="padding:20px">Adiciona apostas para ver análise</div>
+            </div>
+          </div>
+
           <div class="add-form" style="margin-bottom:10px">
             <div class="add-form-title"><i class="fas fa-plus-circle"></i>Adicionar Aposta</div>
             <div class="form-r">
@@ -1078,70 +1099,53 @@ const ESPN_ENDPOINTS = {
 };
 
 const SPORTS = [
-  // ── UEFA Champions League & Europa ──
-  {k:'soccer_uefa_champs_league',      n:'Champions League',     i:'fa-star',      c:'UEFA',    tier:1, color:'#fbbf24'},
-  {k:'soccer_uefa_europa_league',      n:'Europa League',        i:'fa-star-half', c:'UEFA',    tier:1, color:'#f97316'},
-  {k:'soccer_uefa_conference_league',  n:'Conference League',    i:'fa-award',     c:'UEFA',    tier:2, color:'#10b981'},
-  // ── Top 5 Ligas ──
-  {k:'soccer_epl',                     n:'Premier League',       i:'fa-shield',    c:'Soccer',  tier:1, color:'#7cc245', flag:'🇬🇧'},
-  {k:'soccer_spain_la_liga',           n:'La Liga',              i:'fa-shield',    c:'Soccer',  tier:1, color:'#e65e4c', flag:'🇪🇸'},
-  {k:'soccer_italy_serie_a',           n:'Serie A',              i:'fa-shield',    c:'Soccer',  tier:1, color:'#00a8e8', flag:'🇮🇹'},
-  {k:'soccer_germany_bundesliga',      n:'Bundesliga',           i:'fa-shield',    c:'Soccer',  tier:1, color:'#e65e4c', flag:'🇩🇪'},
-  {k:'soccer_france_ligue_one',        n:'Ligue 1',              i:'fa-shield',    c:'Soccer',  tier:1, color:'#a78bfa', flag:'🇫🇷'},
-  // ── Outras Ligas Europa ──
-  {k:'soccer_portugal_primeira_liga',  n:'Primeira Liga',        i:'fa-shield-alt',c:'Soccer',  tier:2, color:'#e65e4c', flag:'🇵🇹'},
-  {k:'soccer_netherlands_eredivisie',  n:'Eredivisie',           i:'fa-shield-alt',c:'Soccer',  tier:2, color:'#f97316', flag:'🇳🇱'},
-  {k:'soccer_belgium_first_div',       n:'Jupiler Pro League',   i:'fa-shield-alt',c:'Soccer',  tier:2, color:'#fbbf24', flag:'🇧🇪'},
-  {k:'soccer_turkey_super_league',     n:'Süper Lig',            i:'fa-shield-alt',c:'Soccer',  tier:2, color:'#e65e4c', flag:'🇹🇷'},
-  {k:'soccer_greece_super_league',     n:'Super League Grécia',  i:'fa-shield-alt',c:'Soccer',  tier:2, color:'#00a8e8', flag:'🇬🇷'},
-  {k:'soccer_scotland_premiership',    n:'Scottish Premier',     i:'fa-shield-alt',c:'Soccer',  tier:2, color:'#a78bfa', flag:'🇬🇧'},
-  {k:'soccer_austria_bundesliga',      n:'Bundesliga Áustria',   i:'fa-shield-alt',c:'Soccer',  tier:3, color:'#e65e4c', flag:'🇦🇹'},
-  // ── Campeonatos Nacionais (2ª Div) ──
-  {k:'soccer_england_efl_champ',       n:'ENG Championship',     i:'fa-layer-group',c:'Soccer', tier:2, color:'#7cc245', flag:'🇬🇧'},
-  {k:'soccer_england_league1',         n:'ENG League One',       i:'fa-layer-group',c:'Soccer', tier:3, color:'#7cc245'},
-  {k:'soccer_england_league2',         n:'ENG League Two',       i:'fa-layer-group',c:'Soccer', tier:3, color:'#7cc245'},
-  {k:'soccer_spain_segunda_division',  n:'Segunda División',     i:'fa-layer-group',c:'Soccer', tier:3, color:'#e65e4c'},
-  {k:'soccer_italy_serie_b',           n:'Serie B',              i:'fa-layer-group',c:'Soccer', tier:3, color:'#00a8e8'},
-  {k:'soccer_germany_liga2',           n:'2. Bundesliga',        i:'fa-layer-group',c:'Soccer', tier:3, color:'#e65e4c'},
-  {k:'soccer_france_ligue_two',        n:'Ligue 2',              i:'fa-layer-group',c:'Soccer', tier:3, color:'#a78bfa'},
-  // ── América ──
-  {k:'soccer_brazil_campeonato',       n:'Brasileirão',          i:'fa-trophy',    c:'America', tier:2, color:'#f97316', flag:'🇧🇷'},
-  {k:'soccer_argentina_primera_division',n:'Primera División',   i:'fa-trophy',    c:'America', tier:2, color:'#00a8e8', flag:'🇦🇷'},
-  {k:'soccer_usa_mls',                 n:'MLS',                  i:'fa-trophy',    c:'America', tier:2, color:'#e65e4c', flag:'🇺🇸'},
-  {k:'soccer_chile_campeonato',        n:'Chilean Primera',      i:'fa-trophy',    c:'America', tier:3, color:'#e65e4c', flag:'🇨🇱'},
-  {k:'soccer_mexico_ligamx',           n:'Liga MX',              i:'fa-trophy',    c:'America', tier:2, color:'#7cc245', flag:'🇲🇽'},
-  // ── FIFA / Seleções ──
-  {k:'soccer_conmebol_copa_america',   n:'Copa América',         i:'fa-globe',     c:'FIFA',    tier:1, color:'#00a8e8'},
-  {k:'soccer_fifa_world_cup',          n:'FIFA World Cup',       i:'fa-globe',     c:'FIFA',    tier:1, color:'#fbbf24'},
-  {k:'soccer_uefa_euro_qualification', n:'Euro Qualification',   i:'fa-globe',     c:'FIFA',    tier:1, color:'#00a8e8'},
-  {k:'soccer_africa_cup_of_nations',   n:'AFCON',                i:'fa-globe',     c:'FIFA',    tier:1, color:'#f97316'},
-  // ── Futebol Feminino ──
-  {k:'soccer_wsl',                     n:'WSL (Women)',          i:'fa-venus',     c:'Womens',  tier:1, color:'#a78bfa'},
-  {k:'soccer_france_d1_feminines',     n:'D1 Féminine',          i:'fa-venus',     c:'Womens',  tier:1, color:'#a78bfa', flag:'🇫🇷'},
-  {k:'soccer_sweden_allsvenskan',      n:'Women Allsvenskan',    i:'fa-venus',     c:'Womens',  tier:2, color:'#a78bfa'},
-  {k:'soccer_nwsl',                    n:'NWSL (USA Women)',     i:'fa-venus',     c:'Womens',  tier:2, color:'#a78bfa', flag:'🇺🇸'},
-  // ── Basketball ──
-  {k:'basketball_nba',                 n:'NBA',                  i:'fa-basketball-ball',c:'Basketball',tier:1,color:'#f97316'},
-  {k:'basketball_wnba',                n:'WNBA',                 i:'fa-basketball-ball',c:'Basketball',tier:2,color:'#f97316'},
-  {k:'basketball_ncaab',               n:'NCAA Basketball',      i:'fa-basketball-ball',c:'Basketball',tier:2,color:'#f97316'},
-  {k:'basketball_euroleague',          n:'Euroliga',             i:'fa-basketball-ball',c:'Basketball',tier:2,color:'#00a8e8'},
-  // ── American Football ──
-  {k:'americanfootball_nfl',           n:'NFL',                  i:'fa-football-ball',c:'Football',tier:1,color:'#00a8e8'},
-  {k:'americanfootball_ncaaf',         n:'NCAA Football',        i:'fa-football-ball',c:'Football',tier:2,color:'#00a8e8'},
-  // ── Ice Hockey ──
-  {k:'icehockey_nhl',                  n:'NHL',                  i:'fa-hockey-puck', c:'Hockey', tier:1,color:'#00a8e8'},
-  // ── Baseball ──
-  {k:'baseball_mlb',                   n:'MLB',                  i:'fa-baseball-ball',c:'Baseball',tier:1,color:'#e65e4c'},
-  // ── Combat Sports ──
-  {k:'mma_mixed_martial_arts',         n:'UFC / MMA',            i:'fa-fist-raised', c:'Combat', tier:1,color:'#e65e4c'},
-  {k:'boxing_boxing',                  n:'Boxing',               i:'fa-fist-raised', c:'Combat', tier:2,color:'#e65e4c'},
-  // ── Tennis ──
-  {k:'tennis_atp_french_open',         n:'Tennis ATP',           i:'fa-table-tennis', c:'Tennis',tier:1,color:'#7cc245'},
-  {k:'tennis_wta_french_open',         n:'Tennis WTA',           i:'fa-table-tennis', c:'Tennis',tier:1,color:'#a78bfa'},
-  // ── Golf / Rugby / Cricket ──
-  {k:'golf_pga_championship',          n:'PGA Golf',             i:'fa-golf-ball',    c:'Other',  tier:2,color:'#7cc245'},
-  {k:'rugbyleague_nrl',                n:'NRL Rugby',            i:'fa-football-ball',c:'Other',  tier:2,color:'#f97316'},
-  {k:'cricket_test_match',             n:'Cricket Test',         i:'fa-cricket',      c:'Other',  tier:2,color:'#7cc245'},
+  {k:'soccer_uefa_champs_league',       n:'Champions League',     i:'fa-star',           c:'UEFA',       tier:1, color:'#fbbf24'},
+  {k:'soccer_uefa_europa_league',       n:'Europa League',        i:'fa-certificate',    c:'UEFA',       tier:1, color:'#f97316'},
+  {k:'soccer_uefa_conference_league',   n:'Conference League',    i:'fa-award',          c:'UEFA',       tier:2, color:'#10b981'},
+  {k:'soccer_epl',                      n:'Premier League',       i:'fa-futbol',         c:'Soccer',     tier:1, color:'#7cc245', flag:'🇬🇧'},
+  {k:'soccer_spain_la_liga',            n:'La Liga',              i:'fa-futbol',         c:'Soccer',     tier:1, color:'#e65e4c', flag:'🇪🇸'},
+  {k:'soccer_italy_serie_a',            n:'Serie A',              i:'fa-futbol',         c:'Soccer',     tier:1, color:'#00a8e8', flag:'🇮🇹'},
+  {k:'soccer_germany_bundesliga',       n:'Bundesliga',           i:'fa-futbol',         c:'Soccer',     tier:1, color:'#e65e4c', flag:'🇩🇪'},
+  {k:'soccer_france_ligue_one',         n:'Ligue 1',              i:'fa-futbol',         c:'Soccer',     tier:1, color:'#a78bfa', flag:'🇫🇷'},
+  {k:'soccer_portugal_primeira_liga',   n:'Primeira Liga',        i:'fa-futbol',         c:'Soccer',     tier:2, color:'#e65e4c', flag:'🇵🇹'},
+  {k:'soccer_netherlands_eredivisie',   n:'Eredivisie',           i:'fa-futbol',         c:'Soccer',     tier:2, color:'#f97316', flag:'🇳🇱'},
+  {k:'soccer_belgium_first_div',        n:'Jupiler Pro League',   i:'fa-futbol',         c:'Soccer',     tier:2, color:'#fbbf24', flag:'🇧🇪'},
+  {k:'soccer_turkey_super_league',      n:'Süper Lig',            i:'fa-futbol',         c:'Soccer',     tier:2, color:'#e65e4c', flag:'🇹🇷'},
+  {k:'soccer_greece_super_league',      n:'Super League',         i:'fa-futbol',         c:'Soccer',     tier:2, color:'#00a8e8', flag:'🇬🇷'},
+  {k:'soccer_scotland_premiership',     n:'Scottish Premier',     i:'fa-futbol',         c:'Soccer',     tier:2, color:'#a78bfa', flag:'🇬🇧'},
+  {k:'soccer_austria_bundesliga',       n:'Bundesliga Áustria',   i:'fa-futbol',         c:'Soccer',     tier:3, color:'#e65e4c', flag:'🇦🇹'},
+  {k:'soccer_england_efl_champ',        n:'Championship',         i:'fa-layer-group',    c:'Soccer',     tier:2, color:'#7cc245', flag:'🇬🇧'},
+  {k:'soccer_england_league1',          n:'League One',           i:'fa-layer-group',    c:'Soccer',     tier:3, color:'#7cc245'},
+  {k:'soccer_england_league2',          n:'League Two',           i:'fa-layer-group',    c:'Soccer',     tier:3, color:'#7cc245'},
+  {k:'soccer_spain_segunda_division',   n:'Segunda División',     i:'fa-layer-group',    c:'Soccer',     tier:3, color:'#e65e4c'},
+  {k:'soccer_italy_serie_b',            n:'Serie B',              i:'fa-layer-group',    c:'Soccer',     tier:3, color:'#00a8e8'},
+  {k:'soccer_germany_liga2',            n:'2. Bundesliga',        i:'fa-layer-group',    c:'Soccer',     tier:3, color:'#e65e4c'},
+  {k:'soccer_france_ligue_two',         n:'Ligue 2',              i:'fa-layer-group',    c:'Soccer',     tier:3, color:'#a78bfa'},
+  {k:'soccer_brazil_campeonato',        n:'Brasileirão',          i:'fa-trophy',         c:'America',    tier:2, color:'#f97316', flag:'🇧🇷'},
+  {k:'soccer_argentina_primera_division',n:'Primera División',    i:'fa-trophy',         c:'America',    tier:2, color:'#00a8e8', flag:'🇦🇷'},
+  {k:'soccer_usa_mls',                  n:'MLS',                  i:'fa-trophy',         c:'America',    tier:2, color:'#e65e4c', flag:'🇺🇸'},
+  {k:'soccer_chile_campeonato',         n:'Chilean Primera',      i:'fa-trophy',         c:'America',    tier:3, color:'#e65e4c', flag:'🇨🇱'},
+  {k:'soccer_mexico_ligamx',            n:'Liga MX',              i:'fa-trophy',         c:'America',    tier:2, color:'#7cc245', flag:'🇲🇽'},
+  {k:'soccer_conmebol_copa_america',    n:'Copa América',         i:'fa-globe-americas', c:'FIFA',       tier:1, color:'#00a8e8'},
+  {k:'soccer_fifa_world_cup',           n:'FIFA World Cup',       i:'fa-globe',          c:'FIFA',       tier:1, color:'#fbbf24'},
+  {k:'soccer_uefa_euro_qualification',  n:'Euro Qualification',   i:'fa-globe',          c:'FIFA',       tier:1, color:'#00a8e8'},
+  {k:'soccer_africa_cup_of_nations',    n:'AFCON',                i:'fa-globe-africa',   c:'FIFA',       tier:1, color:'#f97316'},
+  {k:'soccer_wsl',                      n:'WSL (Women)',          i:'fa-venus',          c:'Womens',     tier:1, color:'#a78bfa', flag:'🇬🇧'},
+  {k:'soccer_france_d1_feminines',      n:'D1 Féminine',          i:'fa-venus',          c:'Womens',     tier:1, color:'#a78bfa', flag:'🇫🇷'},
+  {k:'soccer_nwsl',                     n:'NWSL (USA Women)',     i:'fa-venus',          c:'Womens',     tier:2, color:'#a78bfa', flag:'🇺🇸'},
+  {k:'basketball_nba',                  n:'NBA',                  i:'fa-circle',         c:'Basketball', tier:1, color:'#f97316'},
+  {k:'basketball_wnba',                 n:'WNBA',                 i:'fa-circle',         c:'Basketball', tier:2, color:'#f97316'},
+  {k:'basketball_euroleague',           n:'Euroliga',             i:'fa-circle',         c:'Basketball', tier:2, color:'#00a8e8'},
+  {k:'americanfootball_nfl',            n:'NFL',                  i:'fa-football',       c:'Football',   tier:1, color:'#00a8e8'},
+  {k:'americanfootball_ncaaf',          n:'NCAA Football',        i:'fa-football',       c:'Football',   tier:2, color:'#00a8e8'},
+  {k:'icehockey_nhl',                   n:'NHL',                  i:'fa-hockey-puck',    c:'Hockey',     tier:1, color:'#00a8e8'},
+  {k:'baseball_mlb',                    n:'MLB',                  i:'fa-baseball',       c:'Baseball',   tier:1, color:'#e65e4c'},
+  {k:'mma_mixed_martial_arts',          n:'UFC / MMA',            i:'fa-hand-fist',      c:'Combat',     tier:1, color:'#e65e4c'},
+  {k:'boxing_boxing',                   n:'Boxing',               i:'fa-hand-fist',      c:'Combat',     tier:2, color:'#e65e4c'},
+  {k:'tennis_atp_french_open',          n:'Tennis ATP',           i:'fa-circle-dot',     c:'Tennis',     tier:1, color:'#7cc245'},
+  {k:'tennis_wta_french_open',          n:'Tennis WTA',           i:'fa-circle-dot',     c:'Tennis',     tier:1, color:'#a78bfa'},
+  {k:'golf_pga_championship',           n:'PGA Golf',             i:'fa-flag',           c:'Other',      tier:2, color:'#7cc245'},
+  {k:'rugbyleague_nrl',                 n:'NRL Rugby',            i:'fa-football',       c:'Other',      tier:2, color:'#f97316'},
 ];
 
 const MKT_CATEGORIES = [
@@ -1767,7 +1771,8 @@ function renderTracker() {
   for (var i=done.length-1;i>=0;i--){if(i===done.length-1){streakType=done[i].res;streak=1;}else if(done[i].res===streakType)streak++;else break;}
   var str=document.getElementById('tr-streak'); if(str) str.textContent=streak>0?streak+(streakType==='w'?' wins ':' losses '):'—';
   var pLbl=document.getElementById('tr-period-label'); if(pLbl) pLbl.textContent=G_CHART_PERIOD==='d'?'Daily':G_CHART_PERIOD==='w'?'Weekly':'Monthly';
-  drawOjChart('tr-chart', bets, balance, G_CHART_PERIOD, 130);
+  drawProChart('tr-chart', bets, balance, G_CHART_PERIOD, 130, getDeposits());
+  renderAnalytics();
   if(!bets.length){ document.getElementById('tr-body').innerHTML='<tr><td colspan="10" class="empty">Sem apostas registadas</td></tr>'; return; }
   document.getElementById('tr-body').innerHTML = bets.map(function(b){
     var rl=resLabel(b.res), plVal=parseFloat(b.pl)||0;
@@ -2015,7 +2020,7 @@ function renderOjDashboard() {
   set('psr-pct-won', settled.length ? (won.length / settled.length * 100).toFixed(0) + '%' : '0%');
 
   // Chart
-  drawOjChart('oj-main-chart', bets, balance, G_OJ_PERIOD, 200);
+  drawProChart('oj-main-chart', bets, balance, G_OJ_PERIOD, 240, getDeposits());
 }
 
 // ── PROFESSIONAL CHART ──
@@ -2341,7 +2346,7 @@ function renderSweat() {
   // Render bet list
   renderSweatBets(G_SWEAT_TAB);
   // Render mini chart
-  drawOjChart('sweat-chart', bets, getBalance(), 'w', 90);
+  drawProChart('sweat-chart', bets, getBalance(), 'w', 90, getDeposits());
 }
 
 function renderSweatCal() {
@@ -2455,16 +2460,38 @@ function addDeposit() {
   const deps = getDeposits();
   deps.unshift({ id: Date.now(), date: date || new Date().toISOString().slice(0,10), book, state, type, amount, status });
   saveDeposits(deps);
-  // Clear
+
+  // Auto-update balance from deposits
+  if (status === 'complete') {
+    const totalDep = deps.filter(d=>d.type==='dep'&&d.status==='complete').reduce((s,d)=>s+(parseFloat(d.amount)||0),0);
+    const totalWd  = deps.filter(d=>d.type==='wd' &&d.status==='complete').reduce((s,d)=>s+(parseFloat(d.amount)||0),0);
+    const newBalance = totalDep - totalWd;
+    localStorage.setItem('md_balance', newBalance);
+    const bi = document.getElementById('tr-balance');
+    if (bi) bi.value = newBalance;
+  }
+
   ['dep-book','dep-state','dep-amount','dep-date'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   renderDeposits();
-  toast((type==='dep'?'Depósito':'Levantamento')+' adicionado!','s');
+  renderTracker();
+  renderOjDashboard();
+  toast((type==='dep'?'Depósito':'Levantamento')+' adicionado! Saldo actualizado.','s');
 }
 
 function delDeposit(id) {
-  saveDeposits(getDeposits().filter(d => d.id !== id));
+  const deps = getDeposits().filter(d => d.id !== id);
+  saveDeposits(deps);
+  // Recalculate balance
+  const totalDep = deps.filter(d=>d.type==='dep'&&d.status==='complete').reduce((s,d)=>s+(parseFloat(d.amount)||0),0);
+  const totalWd  = deps.filter(d=>d.type==='wd' &&d.status==='complete').reduce((s,d)=>s+(parseFloat(d.amount)||0),0);
+  const newBalance = totalDep - totalWd;
+  localStorage.setItem('md_balance', newBalance);
+  const bi = document.getElementById('tr-balance');
+  if (bi) bi.value = newBalance;
   renderDeposits();
-  toast('Removido','i');
+  renderTracker();
+  renderOjDashboard();
+  toast('Removido, saldo actualizado','i');
 }
 
 function depSelAll(cb) {
@@ -2489,6 +2516,15 @@ function viewTotals() {
 
 function renderDeposits() {
   const deps = getDeposits();
+  // Auto-sync balance from completed deposits/withdrawals
+  const autoBalance = deps
+    .filter(d => d.status === 'complete')
+    .reduce((s,d) => s + (d.type==='dep'?1:-1)*(parseFloat(d.amount)||0), 0);
+  if (autoBalance > 0) {
+    localStorage.setItem('md_balance', autoBalance);
+    const bi = document.getElementById('tr-balance');
+    if (bi && !bi.dataset.userEdited) bi.value = autoBalance;
+  }
   const q = document.getElementById('dep-search-inp')?.value?.toLowerCase() || '';
   const filtered = q ? deps.filter(d =>
     (d.book||'').toLowerCase().includes(q) ||
@@ -2554,6 +2590,384 @@ function exportCSV() {
 }
 
 
+
+// ══════════════════════════════════════════════════════════════
+// ANALYTICS — sport / market / bookmaker breakdown
+// ══════════════════════════════════════════════════════════════
+let G_ANA_MODE = 'sport';
+
+function switchAnalytics(mode, el) {
+  G_ANA_MODE = mode;
+  document.querySelectorAll('#trk-analytics-section .pt-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderAnalytics();
+}
+
+function renderAnalytics() {
+  const body = document.getElementById('trk-analytics-body');
+  if (!body) return;
+  const bets = getBets().filter(b => b.res !== 'p' && b.res !== 'v');
+  if (!bets.length) {
+    body.innerHTML = '<div class="empty" style="padding:20px">Adiciona apostas para ver análise</div>';
+    return;
+  }
+
+  // Group by mode
+  const groups = {};
+  bets.forEach(b => {
+    let key;
+    if (G_ANA_MODE === 'sport') {
+      // Try to infer sport from game name or use mkt
+      key = b.sport || inferSport(b.game) || 'Outros';
+    } else if (G_ANA_MODE === 'mkt') {
+      key = (b.mkt || '').split(' ')[0] || 'Outros';
+      if (!key || key === '—') key = 'Outros';
+    } else {
+      key = b.book || 'Desconhecida';
+    }
+    if (!groups[key]) groups[key] = { pl:0, stake:0, won:0, lost:0, total:0 };
+    const pl = parseFloat(b.pl) || 0;
+    groups[key].pl    += pl;
+    groups[key].stake += parseFloat(b.stake) || 0;
+    groups[key].total++;
+    if (b.res === 'w' || b.res === 'hw') groups[key].won++;
+    if (b.res === 'l' || b.res === 'hl') groups[key].lost++;
+  });
+
+  const entries = Object.entries(groups)
+    .map(([k, v]) => ({ name:k, ...v, roi: v.stake ? (v.pl/v.stake*100) : 0, wr: v.total ? (v.won/v.total*100) : 0 }))
+    .sort((a, b) => b.pl - a.pl);
+
+  if (!entries.length) { body.innerHTML = '<div class="empty" style="padding:20px">Sem dados</div>'; return; }
+
+  const maxAbs = Math.max(...entries.map(e => Math.abs(e.pl)), 1);
+
+  let html = '<div style="display:grid;gap:5px">';
+  entries.forEach(e => {
+    const isPos = e.pl >= 0;
+    const barPct = Math.abs(e.pl) / maxAbs * 100;
+    const plLbl = (isPos ? '+' : '') + (Math.abs(e.pl) >= 1000 ? (e.pl/1000).toFixed(1)+'k' : Math.round(e.pl)) + ' MZN';
+    const roiLbl = (e.roi >= 0 ? '+' : '') + e.roi.toFixed(1) + '%';
+    html += '<div style="display:grid;grid-template-columns:120px 1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">';
+    html += '<div style="font-size:.75rem;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + e.name + '</div>';
+    html += '<div style="position:relative;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden">';
+    html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + barPct.toFixed(0) + '%;border-radius:4px;background:' + (isPos ? 'var(--green)' : 'var(--red)') + ';opacity:.7"></div></div>';
+    html += '<div style="font-size:.73rem;font-weight:700;color:' + (isPos ? 'var(--green)' : 'var(--red)') + ';min-width:70px;text-align:right">' + plLbl + '</div>';
+    html += '<div style="display:flex;gap:8px;font-size:.66rem;color:var(--t3);min-width:110px;text-align:right">';
+    html += '<span style="color:' + (e.roi >= 0 ? 'var(--green)' : 'var(--red)') + '">' + roiLbl + '</span>';
+    html += '<span>' + e.won + 'W/' + e.lost + 'L</span>';
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function inferSport(game) {
+  if (!game) return null;
+  const g = game.toLowerCase();
+  const map = [
+    ['nba','Basketball'],['euroleague','Basketball'],
+    ['nfl','American Football'],['ncaa football','American Football'],
+    ['nhl','Ice Hockey'],
+    ['mlb','Baseball'],
+    ['ufc','MMA/Combat'],['mma','MMA/Combat'],['boxing','MMA/Combat'],
+    ['tennis','Tennis'],['atp','Tennis'],['wta','Tennis'],
+    ['pga','Golf'],
+    ['premier league','Soccer'],['la liga','Soccer'],['serie a','Soccer'],
+    ['bundesliga','Soccer'],['ligue','Soccer'],['champions','Soccer'],
+    ['europa','Soccer'],['mls','Soccer'],['brasileirao','Soccer'],
+  ];
+  for (const [keyword, sport] of map) {
+    if (g.includes(keyword)) return sport;
+  }
+  return 'Soccer'; // default
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROFESSIONAL CHART v2 — deposits + bets + full capital line
+// ══════════════════════════════════════════════════════════════
+function drawProChart(canvasId, bets, balance, period, height, deposits) {
+  height = height || 240;
+  deposits = deposits || [];
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const done = bets.filter(b => b.res !== 'p');
+
+  // Group bets by period
+  const grouped = {};
+  done.forEach(b => {
+    const dt = new Date(b.date ? b.date.split('/').reverse().join('-') : Date.now());
+    let key;
+    if (period === 'd') key = b.date || '?';
+    else if (period === 'w') {
+      const w = Math.floor((dt - new Date(dt.getFullYear(),0,1)) / 604800000);
+      key = dt.getFullYear() + '-W' + String(w).padStart(2,'0');
+    } else {
+      key = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+    }
+    grouped[key] = (grouped[key] || 0) + (parseFloat(b.pl) || 0);
+  });
+
+  // Group deposits by period
+  const depGrouped = {};
+  deposits.filter(d => d.status === 'complete').forEach(d => {
+    const dt = new Date(d.date || Date.now());
+    let key;
+    if (period === 'd') key = d.date ? d.date.replace(/-/g, '/').split('/').reverse().join('/') : '?';
+    else if (period === 'w') {
+      const w = Math.floor((dt - new Date(dt.getFullYear(),0,1)) / 604800000);
+      key = dt.getFullYear() + '-W' + String(w).padStart(2,'0');
+    } else {
+      key = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+    }
+    const amt = (d.type === 'dep' ? 1 : -1) * (parseFloat(d.amount) || 0);
+    depGrouped[key] = (depGrouped[key] || 0) + amt;
+  });
+
+  const allKeys = [...new Set([...Object.keys(grouped), ...Object.keys(depGrouped)])].sort();
+  const profitVals = allKeys.map(k => grouped[k] || 0);
+
+  // Build cumulative capital (including deposits)
+  let cap = balance || 0;
+  const capValues = [cap];
+  const capEvents = []; // {idx, type:'dep'|'wd', amount}
+  allKeys.forEach((k, i) => {
+    const dep = depGrouped[k] || 0;
+    const pl  = grouped[k]  || 0;
+    if (dep !== 0) capEvents.push({ idx: i + 1, amount: dep, isDeposit: dep > 0 });
+    cap += dep + pl;
+    capValues.push(cap);
+  });
+
+  const labels = ['Início', ...allKeys];
+  const n = profitVals.length;
+
+  // Canvas
+  const W = canvas.parentElement ? canvas.parentElement.clientWidth - 4 : 800;
+  canvas.width = W > 0 ? W : 800;
+  canvas.height = height;
+  const cw = canvas.width, ch = canvas.height;
+  ctx.clearRect(0, 0, cw, ch);
+
+  if (capValues.length < 2) {
+    ctx.fillStyle = 'rgba(150,170,185,.3)';
+    ctx.font = '12px Inter,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Adiciona apostas ou depósitos para ver o gráfico', cw/2, ch/2);
+    return;
+  }
+
+  const pad = { l:70, r:24, t:22, b:30 };
+  const dw = cw - pad.l - pad.r;
+  const dh = ch - pad.t - pad.b;
+
+  const cumMin = Math.min(...capValues);
+  const cumMax = Math.max(...capValues);
+  const lineRange = (cumMax - cumMin) * 1.12 || Math.max(cumMax, 1) * 0.2 || 1000;
+  const lineMin = cumMin - lineRange * 0.06;
+  const lineMax = cumMax + lineRange * 0.06;
+  const lRange  = lineMax - lineMin;
+
+  const toX = i => pad.l + (i / Math.max(capValues.length - 1, 1)) * dw;
+  const toY = v => pad.t + dh - ((v - lineMin) / lRange) * dh;
+
+  const barMax = Math.max(...profitVals.map(Math.abs), 1);
+  const barZeroY = pad.t + dh * 0.78;
+  const barH = v => (v / barMax) * dh * 0.28;
+  const barW  = n > 0 ? Math.max(4, Math.min(30, dw / n * 0.6)) : 20;
+
+  const isGain = capValues[capValues.length-1] >= (balance || capValues[0]);
+  const lineCol = isGain ? '#7cc245' : '#e65e4c';
+
+  // ── Grid ──
+  const gridN = 6;
+  ctx.setLineDash([2,5]);
+  for (let gi = 0; gi <= gridN; gi++) {
+    const v = lineMin + (lRange / gridN) * (gridN - gi);
+    const y = pad.t + (dh / gridN) * gi;
+    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+dw, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(150,170,185,.7)';
+    ctx.font = '9px Inter,sans-serif';
+    ctx.textAlign = 'right';
+    const absV = Math.abs(v);
+    const lbl = absV >= 100000 ? (v/1000).toFixed(0)+'k' : absV >= 10000 ? (v/1000).toFixed(1)+'k' : absV >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString();
+    ctx.fillText(lbl, pad.l-5, y+3.5);
+  }
+  ctx.setLineDash([]);
+
+  // ── Baseline ──
+  const baseY = toY(balance || capValues[0]);
+  if (baseY > pad.t && baseY < pad.t+dh) {
+    ctx.strokeStyle = 'rgba(255,255,255,.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(pad.l, baseY); ctx.lineTo(pad.l+dw, baseY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(150,170,185,.6)';
+    ctx.font = '8px Inter,sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Base', pad.l+4, baseY-3);
+  }
+
+  // ── BARS ──
+  if (n > 0) {
+    profitVals.forEach((pl, i) => {
+      const bx = toX(i+1) - barW/2;
+      const isPos = pl >= 0;
+      const bh = Math.abs(barH(pl));
+      const by = isPos ? barZeroY - bh : barZeroY;
+      const grad = ctx.createLinearGradient(0, by, 0, by+bh);
+      if (isPos) {
+        grad.addColorStop(0, 'rgba(124,194,69,.9)');
+        grad.addColorStop(1, 'rgba(124,194,69,.2)');
+      } else {
+        grad.addColorStop(0, 'rgba(230,94,76,.2)');
+        grad.addColorStop(1, 'rgba(230,94,76,.9)');
+      }
+      ctx.fillStyle = grad;
+      const r = Math.min(3, barW/3);
+      if (bh > 1) {
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(bx, by, barW, Math.max(bh,2), isPos?[r,r,0,0]:[0,0,r,r]);
+        } else {
+          ctx.rect(bx, by, barW, Math.max(bh,2));
+        }
+        ctx.fill();
+      }
+    });
+    // Zero line for bars
+    ctx.strokeStyle = 'rgba(255,255,255,.1)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(pad.l, barZeroY); ctx.lineTo(pad.l+dw, barZeroY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ── Deposit/Withdrawal event markers ──
+  capEvents.forEach(ev => {
+    const ex = toX(ev.idx);
+    const ey = pad.t;
+    ctx.strokeStyle = ev.isDeposit ? 'rgba(0,168,232,.6)' : 'rgba(251,191,36,.6)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex, pad.t+dh); ctx.stroke();
+    ctx.setLineDash([]);
+    // Diamond marker
+    const sz = 5;
+    ctx.fillStyle = ev.isDeposit ? '#00a8e8' : '#fbbf24';
+    ctx.beginPath();
+    ctx.moveTo(ex, ey+2); ctx.lineTo(ex+sz, ey+sz+2);
+    ctx.lineTo(ex, ey+sz*2+2); ctx.lineTo(ex-sz, ey+sz+2);
+    ctx.closePath(); ctx.fill();
+    // Label
+    const amt = Math.abs(ev.amount);
+    const lbl = (ev.isDeposit ? '+' : '-') + (amt >= 1000 ? (amt/1000).toFixed(1)+'k' : amt);
+    ctx.fillStyle = ev.isDeposit ? '#00a8e8' : '#fbbf24';
+    ctx.font = 'bold 8px Inter,sans-serif';
+    ctx.textAlign = ex > cw*0.7 ? 'right' : 'left';
+    ctx.fillText(lbl, ex + (ctx.textAlign==='right' ? -8 : 8), ey+12);
+  });
+
+  // ── Fill ──
+  const gradFill = ctx.createLinearGradient(0, pad.t, 0, pad.t+dh);
+  gradFill.addColorStop(0, isGain ? 'rgba(124,194,69,.22)' : 'rgba(230,94,76,.22)');
+  gradFill.addColorStop(0.7, isGain ? 'rgba(124,194,69,.04)' : 'rgba(230,94,76,.04)');
+  gradFill.addColorStop(1, 'rgba(10,15,20,0)');
+  ctx.beginPath();
+  capValues.forEach((v, i) => {
+    i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v));
+  });
+  ctx.lineTo(toX(capValues.length-1), pad.t+dh);
+  ctx.lineTo(toX(0), pad.t+dh);
+  ctx.closePath();
+  ctx.fillStyle = gradFill;
+  ctx.fill();
+
+  // ── Capital line ──
+  ctx.shadowColor = lineCol;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  capValues.forEach((v, i) => {
+    i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.bezierCurveTo(
+      toX(i-0.5), toY(capValues[i-1]),
+      toX(i-0.5), toY(v),
+      toX(i), toY(v)
+    );
+  });
+  ctx.strokeStyle = lineCol;
+  ctx.lineWidth = 2.8;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // ── Moving average ──
+  if (profitVals.length >= 4) {
+    const win = Math.min(5, Math.floor(profitVals.length/2));
+    let maCap = capValues[0];
+    const maLine = [];
+    profitVals.forEach((pl, i) => {
+      const lo = Math.max(0, i-Math.floor(win/2)), hi = Math.min(profitVals.length-1, i+Math.floor(win/2));
+      const avg = profitVals.slice(lo,hi+1).reduce((a,b)=>a+b,0)/(hi-lo+1);
+      maCap += avg;
+      maLine.push(maCap);
+    });
+    ctx.beginPath();
+    maLine.forEach((v, i) => {
+      const x = toX(i+1), y = toY(v);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = isGain ? 'rgba(124,194,69,.45)' : 'rgba(230,94,76,.45)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([7,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ── Peak & Trough dots ──
+  const maxI = capValues.indexOf(Math.max(...capValues));
+  const minI = capValues.indexOf(Math.min(...capValues));
+  [[maxI,'#7cc245'],[minI,'#e65e4c']].forEach(([idx2, col]) => {
+    if (idx2 < 0) return;
+    const dx = toX(idx2), dy = toY(capValues[idx2]);
+    ctx.beginPath(); ctx.arc(dx, dy, 4.5, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.strokeStyle = '#0a0f14'; ctx.lineWidth = 2;
+    ctx.fill(); ctx.stroke();
+  });
+
+  // ── Last dot + label ──
+  const lx = toX(capValues.length-1), ly = toY(capValues[capValues.length-1]);
+  ctx.shadowColor = lineCol; ctx.shadowBlur = 16;
+  ctx.beginPath(); ctx.arc(lx, ly, 6, 0, Math.PI*2);
+  ctx.fillStyle = lineCol; ctx.strokeStyle = '#0a0f14'; ctx.lineWidth = 2.5;
+  ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  const lastV = capValues[capValues.length-1];
+  const lLbl = (lastV >= 0 ? '' : '-') + 'MZN' + (Math.abs(lastV)>=1000 ? (Math.abs(lastV)/1000).toFixed(1)+'k' : Math.round(Math.abs(lastV)));
+  ctx.fillStyle = lineCol;
+  ctx.font = 'bold 10px Inter,sans-serif';
+  ctx.textAlign = lx > cw*0.75 ? 'right' : 'left';
+  ctx.fillText(lLbl, lx + (ctx.textAlign==='right'?-12:12), ly-11);
+
+  // ── X Labels ──
+  ctx.fillStyle = 'rgba(150,170,185,.65)';
+  ctx.font = '9px Inter,sans-serif';
+  ctx.textAlign = 'center';
+  const maxL = Math.min(labels.length, Math.floor(dw/55));
+  const step = Math.max(1, Math.ceil(labels.length/maxL));
+  labels.forEach((lb, i) => {
+    if (i%step!==0 && i!==labels.length-1) return;
+    ctx.fillText(lb.length>7 ? lb.slice(-6) : lb, toX(i), ch-5);
+  });
+}
+
+
 // ── BOOT ──
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Manuel Danca v7 — OddsJam Tracker');
@@ -2566,6 +2980,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updateMktCount();
   renderTracker();
   renderDeposits();
+  renderAnalytics();
 
   // Init deposit date to today
   var depDateEl = document.getElementById('dep-date');
@@ -2598,5 +3013,6 @@ document.addEventListener('DOMContentLoaded', function() {
   toast('Manuel Danca v7 carregado! ✅', 's');
 });
 </script>
+
 </body>
 </html>
