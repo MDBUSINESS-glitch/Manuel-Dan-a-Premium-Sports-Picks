@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -1485,7 +1486,7 @@ function buildPalpitesAlgo(allEV,weather,mktNames){
   function getTierBonus(sk){var s=SPORTS.find(function(x){return x.k===sk;});var t=s&&s.tier||(sk&&(sk.includes('liga2')||sk.includes('serie_b')||sk.includes('ligue_two')||sk.includes('league1')||sk.includes('segunda'))?3:1);return t===3?2.0:t===2?1.0:0;}
   function mktGroup(key){if(key==='h2h_lay')return'lay';if(key==='h2h'||key==='h2h_3way')return'moneyline';if(key==='btts')return'btts';if(key==='spreads'||key==='alternate_spreads')return'spread';if(key==='totals'||key==='alternate_totals')return'total';return'other';}
   function mktPriority(key){if(key==='alternate_totals')return 1;if(key==='totals')return 2;if(key==='btts')return 3;if(key==='alternate_spreads')return 4;if(key==='h2h'||key==='h2h_3way')return 5;if(key==='spreads')return 6;if(key==='h2h_lay')return 10;return 7;}
-  function mktLabel(key,point,outName){if(key==='h2h'||key==='h2h_3way')return'Moneyline';if(key==='h2h_lay')return'Lay';if(key==='btts')return'BTTS';if(key==='spreads'||key==='alternate_spreads')return'Handicap'+(point!=null?' '+(point>0?'+':'')+point:'');if(key==='totals'||key==='alternate_totals'){var dir=outName&&outName.toLowerCase().includes('over')?'Over':'Under';return dir+(point!=null?' '+Math.abs(point):'');}return key;}
+  function mktLabel(key,point,outName){if(key==='h2h'||key==='h2h_3way')return'Moneyline';if(key==='h2h_lay')return'Lay';if(key==='btts')return'BTTS';if(key==='spreads'||key==='alternate_spreads')return'Handicap'+(point!=null?' '+(point>0?'+':'')+point:'');if(key==='totals'||key==='alternate_totals'){var dir=outName&&outName.toLowerCase().includes('over')?'↑ Over':'↓ Under';return (point!=null?' '+Math.abs(point):'');}return key;}
   var allBets=[];
   G.allData.forEach(function(game){
     game.bookmakers&&game.bookmakers.forEach(function(bm){
@@ -1502,7 +1503,7 @@ function buildPalpitesAlgo(allEV,weather,mktNames){
           var prices=[];game.bookmakers.forEach(function(b2){b2.markets&&b2.markets.find(function(m){return m.key===mkt.key;})&&b2.markets.find(function(m){return m.key===mkt.key;}).outcomes&&b2.markets.find(function(m){return m.key===mkt.key;}).outcomes.forEach(function(o2){if(o2.name===out.name&&o2.point===out.point)prices.push(o2.price);});});
           var avgOdds=prices.length?prices.reduce(function(a,b){return a+b;})/prices.length:price;
           var label=mktLabel(mkt.key,out.point,out.name);
-          allBets.push({game:game.home_team+' vs '+game.away_team,home:game.home_team,away:game.away_team,sport:game._sn||'',icon:game._si||'\u26BD',sportKey:game._sk||'',mkt:label,mktKey:mkt.key,mktGroup:mktGroup(mkt.key),mktPrio:mktPriority(mkt.key),outcome:(out.name||'')+(out.point!=null?' '+(out.point>0?'+':'')+out.point:''),book:bm.title,odds:price,avgOdds:avgOdds,fair:fair.toFixed(2),ev:ev.toFixed(2),kelly:kelly.toFixed(2),prob:prob,time:game.commence_time,isLay:mkt.key==='h2h_lay',tierBonus:getTierBonus(game._sk||'')});
+          allBets.push({game:game.home_team+' vs '+game.away_team,home:game.home_team,away:game.away_team,sport:game._sn||'',icon:game._si||'\u26BD',sportKey:game._sk||'',mkt:label,mktKey:mkt.key,mktGroup:mktGroup(mkt.key),mktPrio:mktPriority(mkt.key),outcome:(function(){var n=out.name||'';if((mkt.key==='totals'||mkt.key==='alternate_totals')&&out.point!=null){return(n.toLowerbook:bm.title,odds:price,avgOdds:avgOdds,fair:fair.toFixed(2),ev:ev.toFixed(2),kelly:kelly.toFixed(2),prob:prob,time:game.commence_time,isLay:mkt.key==='h2h_lay',tierBonus:getTierBonus(game._sk||'')});
         });
       });
     });
@@ -1524,6 +1525,7 @@ function buildPalpitesAlgo(allEV,weather,mktNames){
   return selected;
 }
   var allSelected=selectLegs(0); // 0 = no limit, show all EV+
+  allSelected.sort(function(a,b){ return parseFloat(b.ev)-parseFlo
   if(allSelected.length<2)throw new Error('Apenas '+allSelected.length+' jogo(s) disponíveis. Sem jogos hoje nestas ligas.');
   return allSelected.map(function(l){var ev=parseFloat(l.ev);var w=weather[l.game];var wInfo=w&&w.current&&w.current.weather_code!==undefined?wCode(w.current.weather_code):null;var wTxt=wInfo&&wInfo.r>=2?' \u26A0 '+wInfo.t+' pode influenciar.':'';var tierTxt=l.tierBonus>0?' \u1F4CA Liga '+(l.tierBonus>=2?'terciária':'secundária')+' — maior valor.':'';var evTxt=ev>3?'Edge forte +'+l.ev+'% vs fair '+l.fair+'.':ev>0?'Vantagem +'+l.ev+'% sobre o mercado.':'Alta probabilidade (~'+l.prob.toFixed(0)+'%).';return{pick:l.outcome,game:l.game,home:l.home,away:l.away,sport:l.sport,icon:l.icon,market:l.mkt,market_key:l.mktKey,bookmaker:l.book,odds_best:parseFloat(l.odds).toFixed(2),odds_avg:parseFloat(l.avgOdds||l.odds).toFixed(2),fair_odd:l.fair,ev_pct:l.ev,kelly_pct:l.kelly,prob_real:l.prob.toFixed(1),is_lay:!!l.isLay,tier_bonus:l.tierBonus>0,reasoning:evTxt+tierTxt+wTxt,weather_info:wInfo?wInfo.i+'|'+wInfo.t+'|'+(w.current.temperature_2m?w.current.temperature_2m.toFixed(0):'?'):null,game_time:l.time||null}; });
 }
@@ -2774,7 +2776,238 @@ document.addEventListener('DOMContentLoaded', function() {
   switchTrkTab('dash');
   toast('Manuel Danca v7 carregado!', 's');
 });
+/* ══════════════════════════════════════════════════════════
+ *  MANUEL DANÇA — PATCH v8
+ *  Inserido no FIM do <script>, antes do </script>
+ *  CORRECÇÕES:
+ *  1. Palpites ordenados por EV+ (maior primeiro)
+ *  2. Over ↑ / Under ↓ sem o sinal + desnecessário
+ * ══════════════════════════════════════════════════════════ */
 
+// ── HELPER: label para outcome Over/Under ──────────────────
+function _outcomeLabel(name, point) {
+  var n  = name  || '';
+  var pt = (point !== undefined && point !== null) ? point : null;
+  if (pt === null) return n;
+  var isOv = n.toLowerCase().indexOf('over')  >= 0;
+  var isUn = n.toLowerCase().indexOf('under') >= 0;
+  if (isOv) return '↑ Over '  + Math.abs(pt);
+  if (isUn) return '↓ Under ' + Math.abs(pt);
+  return n + ' ' + (pt > 0 ? '+' : '') + pt;
+}
+
+// ── OVERRIDE buildPalpitesAlgo ──────────────────────────────
+var _buildPalpitesAlgo_original = buildPalpitesAlgo;
+buildPalpitesAlgo = function(allEV, weather, mktNames) {
+
+  var sharp = ['pinnacle','betfair_ex_eu','betfair','smarkets','matchbook'];
+
+  function getTierBonus(sk) {
+    var s = SPORTS.find(function(x){ return x.k === sk; });
+    var t = s && s.tier || (sk && (
+      sk.includes('liga2') || sk.includes('serie_b') ||
+      sk.includes('ligue_two') || sk.includes('league1') ||
+      sk.includes('segunda')) ? 3 : 1);
+    return t === 3 ? 2.0 : t === 2 ? 1.0 : 0;
+  }
+
+  function mktGroup(key) {
+    if (key === 'h2h_lay')                          return 'lay';
+    if (key === 'h2h' || key === 'h2h_3way')        return 'moneyline';
+    if (key === 'btts')                             return 'btts';
+    if (key === 'spreads' || key === 'alternate_spreads') return 'spread';
+    if (key === 'totals'  || key === 'alternate_totals')  return 'total';
+    return 'other';
+  }
+
+  function mktPriority(key) {
+    if (key === 'alternate_totals')   return 1;
+    if (key === 'totals')             return 2;
+    if (key === 'btts')               return 3;
+    if (key === 'alternate_spreads')  return 4;
+    if (key === 'h2h' || key === 'h2h_3way') return 5;
+    if (key === 'spreads')            return 6;
+    if (key === 'h2h_lay')            return 10;
+    return 7;
+  }
+
+  function mktLabel(key, point, outName) {
+    if (key === 'h2h' || key === 'h2h_3way') return 'Moneyline';
+    if (key === 'h2h_lay')  return 'Lay';
+    if (key === 'btts')     return 'BTTS';
+    if (key === 'spreads' || key === 'alternate_spreads')
+      return 'Handicap' + (point != null ? ' ' + (point > 0 ? '+' : '') + point : '');
+    if (key === 'totals' || key === 'alternate_totals') {
+      var dir = outName && outName.toLowerCase().includes('over') ? '↑ Over' : '↓ Under';
+      return dir + (point != null ? ' ' + Math.abs(point) : '');
+    }
+    return key;
+  }
+
+  var allBets = [];
+
+  G.allData.forEach(function(game) {
+    game.bookmakers && game.bookmakers.forEach(function(bm) {
+      bm.markets && bm.markets.forEach(function(mkt) {
+        mkt.outcomes && mkt.outcomes.forEach(function(out) {
+          var price = out.price;
+          if (!price || price < 1.40 || price > 2.05) return;
+
+          var refBm = game.bookmakers.find(function(b){ return sharp.includes(b.key); }) ||
+                      game.bookmakers.sort(function(a,b){
+                        return ((b.markets&&b.markets.length)||0) - ((a.markets&&a.markets.length)||0);
+                      })[0];
+          var refMkt = refBm && refBm.markets && refBm.markets.find(function(m){ return m.key === mkt.key; });
+          var fair = null;
+          if (refMkt && refMkt.outcomes.length >= 2) {
+            var tp = refMkt.outcomes.reduce(function(s,o){ return s + 1/o.price; }, 0);
+            var refO = refMkt.outcomes.find(function(o){
+              return o.name === out.name && (o.point == null || o.point === out.point);
+            });
+            if (refO && tp > 0) fair = 1 / ((1/refO.price) / tp);
+          }
+          if (!fair || fair <= 1) fair = price * 1.025;
+
+          var ev    = calcEV(price, fair);
+          var kelly = Math.max(0, calcKelly(price, fair));
+          var prob  = (1 / fair) * 100;
+
+          var prices = [];
+          game.bookmakers.forEach(function(b2) {
+            var m2 = b2.markets && b2.markets.find(function(m){ return m.key === mkt.key; });
+            m2 && m2.outcomes && m2.outcomes.forEach(function(o2) {
+              if (o2.name === out.name && o2.point === out.point) prices.push(o2.price);
+            });
+          });
+          var avgOdds = prices.length
+            ? prices.reduce(function(a,b){ return a+b; }) / prices.length
+            : price;
+
+          var label = mktLabel(mkt.key, out.point, out.name);
+
+          // ── PATCH 1: outcome com ↑/↓ sem + desnecessário ──
+          var outcomeStr = _outcomeLabel(
+            out.name,
+            out.point !== undefined ? out.point : null
+          );
+
+          allBets.push({
+            game      : game.home_team + ' vs ' + game.away_team,
+            home      : game.home_team,
+            away      : game.away_team,
+            sport     : game._sn || '',
+            icon      : game._si || '⚽',
+            sportKey  : game._sk || '',
+            mkt       : label,
+            mktKey    : mkt.key,
+            mktGroup  : mktGroup(mkt.key),
+            mktPrio   : mktPriority(mkt.key),
+            outcome   : outcomeStr,
+            book      : bm.title,
+            bkey      : bm.key,
+            odds      : price,
+            avgOdds   : avgOdds,
+            fair      : fair.toFixed(2),
+            ev        : ev.toFixed(2),
+            kelly     : kelly.toFixed(2),
+            prob      : prob,
+            time      : game.commence_time,
+            isLay     : mkt.key === 'h2h_lay',
+            tierBonus : getTierBonus(game._sk || '')
+          });
+        });
+      });
+    });
+  });
+
+  if (!allBets.length)
+    throw new Error('Sem apostas disponíveis (1.40–2.05). A API pode não ter retornado dados.');
+
+  function score(b) {
+    var ev      = parseFloat(b.ev);
+    var prob    = b.prob;
+    var w       = weather[b.game];
+    var wPenalty= (w && w.current && w.current.weather_code !== undefined)
+                  ? wCode(w.current.weather_code).r * 0.5 : 0;
+    var oddsIdeal = (b.odds >= 1.55 && b.odds <= 1.80) ? 2.0
+                  : (b.odds >= 1.45 && b.odds <= 1.95) ? 0.5 : -1.0;
+    var evScore   = ev > 3 ? ev*2.5 : ev > 0 ? ev*1.5 : ev*0.2;
+    var layPenalty= b.isLay ? -3.0 : 0;
+    var mktBonus  = b.mktPrio <= 3 ? 2.0 : b.mktPrio <= 5 ? 0.5 : 0;
+    return evScore + (prob*0.05) + oddsIdeal + layPenalty + mktBonus + (b.tierBonus*0.8) - wPenalty;
+  }
+
+  var bestMap = new Map();
+  allBets.forEach(function(b) {
+    var key = b.game + '|' + b.mktKey + '|' + b.outcome;
+    var ex  = bestMap.get(key);
+    if (!ex || b.odds > ex.odds) bestMap.set(key, b);
+  });
+
+  var candidates = Array.from(bestMap.values())
+    .sort(function(a,b){ return score(b) - score(a); });
+
+  function selectLegs(n) {
+    var usedGames = new Set(), selected = [];
+    for (var ci = 0; ci < candidates.length; ci++) {
+      if (n > 0 && selected.length >= n) break;
+      var bet = candidates[ci];
+      if (usedGames.has(bet.game)) continue;
+      if (bet.isLay && selected.filter(function(s){ return s.isLay; }).length >= 1) continue;
+      usedGames.add(bet.game);
+      selected.push(bet);
+    }
+    return selected;
+  }
+
+  var allSelected = selectLegs(0);
+  if (allSelected.length < 2)
+    throw new Error('Apenas ' + allSelected.length + ' jogo(s) disponíveis. Sem jogos hoje nestas ligas.');
+
+  // ── PATCH 2: ordenar por ev_pct descending ──
+  return allSelected.map(function(l) {
+    var ev    = parseFloat(l.ev);
+    var w     = weather[l.game];
+    var wInfo = (w && w.current && w.current.weather_code !== undefined)
+                ? wCode(w.current.weather_code) : null;
+    var wTxt  = (wInfo && wInfo.r >= 2) ? ' ⚠ ' + wInfo.t + ' pode influenciar.' : '';
+    var tierTxt = l.tierBonus > 0
+      ? ' 📊 Liga ' + (l.tierBonus >= 2 ? 'terciária' : 'secundária') + ' — maior valor.' : '';
+    var evTxt = ev > 3 ? 'Edge forte +' + l.ev + '% vs fair ' + l.fair + '.'
+              : ev > 0 ? 'Vantagem +' + l.ev + '% sobre o mercado.'
+              : 'Alta probabilidade (~' + l.prob.toFixed(0) + '%).';
+    return {
+      pick        : l.outcome,
+      game        : l.game,
+      home        : l.home,
+      away        : l.away,
+      sport       : l.sport,
+      icon        : l.icon,
+      market      : l.mkt,
+      market_key  : l.mktKey,
+      bookmaker   : l.book,
+      odds_best   : parseFloat(l.odds).toFixed(2),
+      odds_avg    : parseFloat(l.avgOdds || l.odds).toFixed(2),
+      fair_odd    : l.fair,
+      ev_pct      : l.ev,
+      kelly_pct   : l.kelly,
+      prob_real   : l.prob.toFixed(1),
+      is_lay      : !!l.isLay,
+      tier_bonus  : l.tierBonus > 0,
+      reasoning   : evTxt + tierTxt + wTxt,
+      weather_info: wInfo
+        ? wInfo.i + '|' + wInfo.t + '|' + (w.current.temperature_2m
+            ? w.current.temperature_2m.toFixed(0) : '?')
+        : null,
+      game_time   : l.time || null
+    };
+  })
+  .sort(function(a, b) {
+    return parseFloat(b.ev_pct) - parseFloat(a.ev_pct);  // PATCH 2
+  });
+};
+
+console.log('[MD Patch v8] buildPalpitesAlgo overridden: ↑↓ labels + EV sort ✓');
 </script>
 </body>
 </html>
