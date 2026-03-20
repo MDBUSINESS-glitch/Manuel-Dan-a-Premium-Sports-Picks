@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -1485,7 +1486,7 @@ function buildPalpitesAlgo(allEV,weather,mktNames){
   function getTierBonus(sk){var s=SPORTS.find(function(x){return x.k===sk;});var t=s&&s.tier||(sk&&(sk.includes('liga2')||sk.includes('serie_b')||sk.includes('ligue_two')||sk.includes('league1')||sk.includes('segunda'))?3:1);return t===3?2.0:t===2?1.0:0;}
   function mktGroup(key){if(key==='h2h_lay')return'lay';if(key==='h2h'||key==='h2h_3way')return'moneyline';if(key==='btts')return'btts';if(key==='spreads'||key==='alternate_spreads')return'spread';if(key==='totals'||key==='alternate_totals')return'total';return'other';}
   function mktPriority(key){if(key==='alternate_totals')return 1;if(key==='totals')return 2;if(key==='btts')return 3;if(key==='alternate_spreads')return 4;if(key==='h2h'||key==='h2h_3way')return 5;if(key==='spreads')return 6;if(key==='h2h_lay')return 10;return 7;}
-  function mktLabel(key,point,outName){if(key==='h2h'||key==='h2h_3way')return'Moneyline';if(key==='h2h_lay')return'Lay';if(key==='btts')return'BTTS';if(key==='spreads'||key==='alternate_spreads')return'Handicap'+(point!=null?' '+(point>0?'+':'')+point:'');if(key==='totals'||key==='alternate_totals'){var dir=outName&&outName.toLowerCase().includes('over')?'Over':'Under';return dir+(point!=null?' '+Math.abs(point):'');}return key;}
+  function mktLabel(key,point,outName){if(key==='h2h'||key==='h2h_3way')return'Moneyline';if(key==='h2h_lay')return'Lay';if(key==='btts')return'BTTS';if(key==='spreads'||key==='alternate_spreads')return'Handicap'+(point!=null?' '+(point>0?'+':'')+point:'');if(key==='totals'||key==='alternate_totals'){var dir=outName&&outName.toLowerCase().includes('over')?'↑ Over':'↓ Under';return (point!=null?' '+Math.abs(point):'');}return key;}
   var allBets=[];
   G.allData.forEach(function(game){
     game.bookmakers&&game.bookmakers.forEach(function(bm){
@@ -1502,7 +1503,7 @@ function buildPalpitesAlgo(allEV,weather,mktNames){
           var prices=[];game.bookmakers.forEach(function(b2){b2.markets&&b2.markets.find(function(m){return m.key===mkt.key;})&&b2.markets.find(function(m){return m.key===mkt.key;}).outcomes&&b2.markets.find(function(m){return m.key===mkt.key;}).outcomes.forEach(function(o2){if(o2.name===out.name&&o2.point===out.point)prices.push(o2.price);});});
           var avgOdds=prices.length?prices.reduce(function(a,b){return a+b;})/prices.length:price;
           var label=mktLabel(mkt.key,out.point,out.name);
-          allBets.push({game:game.home_team+' vs '+game.away_team,home:game.home_team,away:game.away_team,sport:game._sn||'',icon:game._si||'\u26BD',sportKey:game._sk||'',mkt:label,mktKey:mkt.key,mktGroup:mktGroup(mkt.key),mktPrio:mktPriority(mkt.key),outcome:(out.name||'')+(out.point!=null?' '+(out.point>0?'+':'')+out.point:''),book:bm.title,odds:price,avgOdds:avgOdds,fair:fair.toFixed(2),ev:ev.toFixed(2),kelly:kelly.toFixed(2),prob:prob,time:game.commence_time,isLay:mkt.key==='h2h_lay',tierBonus:getTierBonus(game._sk||'')});
+          allBets.push({game:game.home_team+' vs '+game.away_team,home:game.home_team,away:game.away_team,sport:game._sn||'',icon:game._si||'\u26BD',sportKey:game._sk||'',mkt:label,mktKey:mkt.key,mktGroup:mktGroup(mkt.key),mktPrio:mktPriority(mkt.key),outcome:(function(){var n=out.name||'';if((mkt.key==='totals'||mkt.key==='alternate_totals')&&out.point!=null){return(n.toLowerbook:bm.title,odds:price,avgOdds:avgOdds,fair:fair.toFixed(2),ev:ev.toFixed(2),kelly:kelly.toFixed(2),prob:prob,time:game.commence_time,isLay:mkt.key==='h2h_lay',tierBonus:getTierBonus(game._sk||'')});
         });
       });
     });
@@ -1524,6 +1525,7 @@ function buildPalpitesAlgo(allEV,weather,mktNames){
   return selected;
 }
   var allSelected=selectLegs(0); // 0 = no limit, show all EV+
+  allSelected.sort(function(a,b){ return parseFloat(b.ev)-parseFlo
   if(allSelected.length<2)throw new Error('Apenas '+allSelected.length+' jogo(s) disponíveis. Sem jogos hoje nestas ligas.');
   return allSelected.map(function(l){var ev=parseFloat(l.ev);var w=weather[l.game];var wInfo=w&&w.current&&w.current.weather_code!==undefined?wCode(w.current.weather_code):null;var wTxt=wInfo&&wInfo.r>=2?' \u26A0 '+wInfo.t+' pode influenciar.':'';var tierTxt=l.tierBonus>0?' \u1F4CA Liga '+(l.tierBonus>=2?'terciária':'secundária')+' — maior valor.':'';var evTxt=ev>3?'Edge forte +'+l.ev+'% vs fair '+l.fair+'.':ev>0?'Vantagem +'+l.ev+'% sobre o mercado.':'Alta probabilidade (~'+l.prob.toFixed(0)+'%).';return{pick:l.outcome,game:l.game,home:l.home,away:l.away,sport:l.sport,icon:l.icon,market:l.mkt,market_key:l.mktKey,bookmaker:l.book,odds_best:parseFloat(l.odds).toFixed(2),odds_avg:parseFloat(l.avgOdds||l.odds).toFixed(2),fair_odd:l.fair,ev_pct:l.ev,kelly_pct:l.kelly,prob_real:l.prob.toFixed(1),is_lay:!!l.isLay,tier_bonus:l.tierBonus>0,reasoning:evTxt+tierTxt+wTxt,weather_info:wInfo?wInfo.i+'|'+wInfo.t+'|'+(w.current.temperature_2m?w.current.temperature_2m.toFixed(0):'?'):null,game_time:l.time||null}; });
 }
