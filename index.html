@@ -416,7 +416,6 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
     <div class="nav-item" data-pg="palpites"><i class="fas fa-magic nav-icon" style="color:#c4b5fd"></i>Palpites Hoje<span class="nav-badge nb-ai">AI</span></div>
     <div style="height:1px;background:var(--border);margin:4px 0"></div>
     <div class="nav-item" data-pg="ev"><i class="fas fa-chart-line nav-icon"></i>Positive EV</div>
-    <div class="nav-item" data-pg="arbitrage"><i class="fas fa-exchange-alt nav-icon"></i>Arbitrage</div>
     <div class="nav-item" data-pg="sportsbook"><i class="fas fa-table nav-icon"></i>Sportsbook<span class="nav-badge nb-new">Live</span></div>
     <div class="nav-item" data-pg="live"><i class="fas fa-broadcast-tower nav-icon"></i>Live Scores<span class="nav-badge nb-live">Live</span></div>
     <div class="nav-item" data-pg="tracker"><i class="fas fa-chart-bar nav-icon"></i>Bet Tracker</div>
@@ -453,7 +452,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
     </div>
     <a href="https://wa.me/258840330540" target="_blank" class="wa-row"><i class="fab fa-whatsapp" style="color:#25d366;width:14px"></i>840 330 540 -- 24/7</a>
     <a href="https://wa.me/258877480775" target="_blank" class="wa-row"><i class="fab fa-whatsapp" style="color:#25d366;width:14px"></i>877 480 775 -- 24/7</a>
-    <a href="mailto:info@manueldanca.com" class="wa-row"><i class="fas fa-envelope" style="color:var(--blue);width:14px"></i>info@manueldanca.com</a>
+    <a href="/cdn-cgi/l/email-protection#5831363e37183539362d3d343c39363b39763b3735" class="wa-row"><i class="fas fa-envelope" style="color:var(--blue);width:14px"></i><span class="__cf_email__" data-cfemail="10797e767f507d717e65757c74717e73713e737f7d">[email&#160;protected]</span></a>
   </div>
 </nav>
 <main id="main">
@@ -483,20 +482,17 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
       <div class="dash-wrap">
         <div class="d-cards">
           <div class="d-card" style="border-left:3px solid var(--green)"><div class="di di-g"><i class="fas fa-chart-line"></i></div><div><div class="d-val" id="d-ev-c">--</div><div class="d-lbl">Apostas +EV</div></div></div>
-          <div class="d-card" style="border-left:3px solid var(--blue)"><div class="di di-b"><i class="fas fa-exchange-alt"></i></div><div><div class="d-val" id="d-arb-c">--</div><div class="d-lbl">Arbitragens</div></div></div>
           <div class="d-card" style="border-left:3px solid var(--purple)"><div class="di di-p"><i class="fas fa-futbol"></i></div><div><div class="d-val" id="d-gm-c">--</div><div class="d-lbl">Jogos</div></div></div>
           <div class="d-card" style="border-left:3px solid var(--yellow)"><div class="di di-y"><i class="fas fa-store"></i></div><div><div class="d-val" id="d-bk-c">--</div><div class="d-lbl">Casas de Apostas</div></div></div>
         </div>
         <div class="qa-grid">
           <div class="qa qa-g" onclick="go('ev')"><div class="qa-ico" style="background:rgba(124,194,69,.1);color:var(--green)"><i class="fas fa-chart-line"></i></div><div class="qa-t">Positive EV</div><div class="qa-d">Apostas com valor esperado positivo</div></div>
           <div class="qa qa-b" onclick="go('sportsbook')"><div class="qa-ico" style="background:rgba(0,168,232,.1);color:var(--blue)"><i class="fas fa-table"></i></div><div class="qa-t">Sportsbook Screen</div><div class="qa-d">Comparar odds em tempo real</div></div>
-          <div class="qa qa-p" onclick="go('arbitrage')"><div class="qa-ico" style="background:rgba(167,139,250,.1);color:var(--purple)"><i class="fas fa-exchange-alt"></i></div><div class="qa-t">Arbitrage</div><div class="qa-d">Lucro garantido entre casas</div></div>
           <div class="qa qa-y" onclick="go('palpites')"><div class="qa-ico" style="background:rgba(167,139,250,.1);color:#c4b5fd"><i class="fas fa-magic"></i></div><div class="qa-t">Palpites IA</div><div class="qa-d">Dupla + Tripla com EV positivo</div></div>
         </div>
         <div class="sec-row"><div class="sec-h"><i class="fas fa-fire" style="color:var(--orange)"></i>Top Apostas +EV</div><button class="see-all" onclick="go('ev')">Ver todas &rarr;</button></div>
         <div class="data-box" style="margin-bottom:12px"><table class="gt" style="min-width:600px"><thead><tr><th>Sport</th><th>Jogo</th><th>Aposta</th><th>Casa</th><th>Odd</th><th>Fair</th><th>EV%</th><th>Hora</th></tr></thead><tbody id="d-ev-body"><tr><td colspan="8" class="empty">Carrega dados na pagina +EV</td></tr></tbody></table></div>
-        <div class="sec-row"><div class="sec-h"><i class="fas fa-exchange-alt" style="color:var(--blue)"></i>Arbitragens</div><button class="see-all" onclick="go('arbitrage')">Ver todas &rarr;</button></div>
-        <div class="data-box"><table class="gt" style="min-width:640px"><thead><tr><th>Sport</th><th>Jogo</th><th>Casa 1</th><th>Odd 1</th><th>Casa 2</th><th>Odd 2</th><th>Lucro%</th><th>Hora</th></tr></thead><tbody id="d-arb-body"><tr><td colspan="8" class="empty">Sem dados</td></tr></tbody></table></div>
+
       </div>
     </div>
 
@@ -556,27 +552,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
       <tbody id="ev-body"><tr><td colspan="9" class="empty"><div class="spin"></div><div style="margin-top:8px">A carregar odds...</div></td></tr></tbody></table></div>
     </div>
 
-    <!-- ARBITRAGE -->
-    <div id="pg-arbitrage" class="page">
-      <div class="pg-header">
-        <div><div class="pg-title" style="color:var(--blue)"><i class="fas fa-exchange-alt"></i>Arbitrage Finder</div><div class="pg-desc">Lucro garantido -- diferencas de odds entre casas</div></div>
-        <button class="btn btn-blue" onclick="loadArb()"><i class="fas fa-search"></i>Procurar Arbs</button>
-      </div>
-      <div class="warn-box"><i class="fas fa-exclamation-triangle"></i><div><strong>Atencao!</strong><p>Arbitragem pode limitar contas. Oportunidades duram segundos!</p></div></div>
-      <div style="padding:0 14px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-        <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--t3)">Min Lucro%</label><select id="arb-min" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:6px 9px;border-radius:6px;font-size:.78rem;outline:none"><option value="0">Todos</option><option value="0.5">+0.5%</option><option value="1">+1%</option><option value="2">+2%</option></select></div>
-        <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--t3)">Bankroll MZN</label><input type="number" id="arb-bank" value="5000" min="10" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:6px 9px;border-radius:6px;font-size:.78rem;outline:none;width:110px"></div>
-        <button class="btn btn-blue" onclick="loadArb()"><i class="fas fa-search"></i>Procurar</button>
-      </div>
-      <div class="stat-bar">
-        <div class="stat-c"><span class="stat-v sv-g" id="arb-cnt">0</span><div class="stat-l">Arbs Found</div></div>
-        <div class="stat-c"><span class="stat-v sv-b" id="arb-avg-pct">0%</span><div class="stat-l">Avg Lucro%</div></div>
-        <div class="stat-c"><span class="stat-v sv-g" id="arb-best-pct">0%</span><div class="stat-l">Melhor%</div></div>
-      </div>
-      <div style="overflow-x:auto;padding-bottom:50px"><table class="ev-tbl" style="min-width:960px"><thead><tr><th>Lucro%</th><th>Sport</th><th>Jogo</th><th>Aposta 1</th><th>Casa 1</th><th>Odd 1</th><th>Stake 1</th><th>Aposta 2</th><th>Casa 2</th><th>Odd 2</th><th>Stake 2</th><th>Lucro MZN</th></tr></thead><tbody id="arb-body"><tr><td colspan="12" class="empty">Clica em "Procurar Arbs"</td></tr></tbody></table></div>
-    </div>
-
-    <!-- LIVE SCORES -->
+        <!-- LIVE SCORES -->
     <div id="pg-live" class="page">
       <div class="pg-header">
         <div><div class="pg-title" style="color:var(--red)"><i class="fas fa-broadcast-tower"></i>Live Scores</div><div class="pg-desc">ESPN API -- sem chave necessaria</div></div>
@@ -750,7 +726,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
               </div>
             </div>
             <div style="overflow-x:auto">
-              <table class="gt" style="min-width:700px"><thead><tr><th>Data</th><th>Jogo</th><th>Mercado</th><th>Odd</th><th>Fair</th><th>CLV%</th><th>Stake</th><th>Resultado</th><th>Score</th><th>P/L</th><th>Acao</th></tr></thead>
+              <table class="gt" style="min-width:700px"><thead><tr><th>Data</th><th>Jogo</th><th>Mercado</th><th>Odd</th><th>Fair</th><th>CLV%</th><th>Stake</th><th>Score</th><th>Resultado</th><th>P/L</th><th>Acao</th></tr></thead>
               <tbody id="tr-body"><tr><td colspan="11" class="empty">Sem apostas registadas</td></tr></tbody></table>
             </div>
           </div>
@@ -865,7 +841,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
   <div class="modal-box"><div class="modal-hdr"><h3 id="m-ttl"></h3><button class="modal-cls" onclick="closeModal()"><i class="fas fa-times"></i></button></div><div class="modal-bdy" id="m-bdy"></div></div>
 </div>
 <div class="tw" id="tw"></div>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 'use strict';
 // ── CONFIG ──
 let ODDS_KEY = localStorage.getItem('md_odds_key') || '901f7b8b61b01403304d0ba1a7d7f8ee';
@@ -962,7 +938,6 @@ function go(pid){
   try{
     if(pid==='ev')loadEV();
     else if(pid==='live')loadLive();
-    else if(pid==='arbitrage')loadArb();
     else if(pid==='dashboard')loadDash();
     else if(pid==='pricing')renderPricing();
     else if(pid==='models')initModels();
@@ -1044,15 +1019,9 @@ function setEVTab(mode,el){G.evTab=mode;$$('#pg-ev button[id^="evt"]').forEach(f
 function toggleEVF(){var p=$('ev-filter-panel');p.style.display=p.style.display==='none'?'block':'none';}
 function evDetail(i){var b=G.ev[i];if(!b)return;var ctr=getCounter(b);openModal('+EV — Detalhe da Aposta','<div style="display:grid;gap:10px"><div style="padding:12px;background:var(--bg-card2);border-radius:8px"><div style="font-weight:700;font-size:.9rem;color:var(--t1)">'+b.game+'</div><div style="font-size:.7rem;color:var(--t3);margin-top:3px">'+b.icon+' '+b.sport+'</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="padding:14px;background:var(--bg-card2);border:1px solid var(--green-brd);border-radius:8px;text-align:center"><div style="font-size:.58rem;color:var(--t3);margin-bottom:4px;text-transform:uppercase">Expected Value</div><div style="font-size:2rem;font-weight:800;color:var(--green)">+'+b.ev+'%</div></div><div style="padding:14px;background:var(--bg-card2);border:1px solid var(--blue-brd);border-radius:8px;text-align:center"><div style="font-size:.58rem;color:var(--t3);margin-bottom:4px;text-transform:uppercase">Kelly %</div><div style="font-size:2rem;font-weight:800;color:var(--blue)">'+b.kelly+'%</div></div></div><table style="width:100%;font-size:.8rem;border-collapse:collapse">'+[['Aposta','<strong>'+b.outcome+'</strong>'],['Casa',b.book],['Odd',b.odds.toFixed(2)],['No-Vig',b.fair],['Stake Rec.','MZN '+Math.max(100,Math.round(parseFloat(b.kelly)*2)*100)],...(ctr?[['Contra-Aposta',ctr.outcome+' @ '+d2am(ctr.odds)+' ('+ctr.book+')']]:[])] .map(function(r){return'<tr style="border-bottom:1px solid rgba(255,255,255,.025)"><td style="padding:6px 0;color:var(--t3)">'+r[0]+'</td><td style="padding:6px 0;text-align:right;color:var(--t1)">'+r[1]+'</td></tr>';}).join('')+'</table><a href="https://wa.me/258840330540?text=+EV: '+encodeURIComponent(b.game+' | '+b.outcome+' '+d2am(b.odds)+' EV: +'+b.ev+'%')+'" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#1da462,#138a4e);color:#fff;padding:10px;border-radius:7px;font-size:.78rem;font-weight:700;text-decoration:none"><i class="fab fa-whatsapp" style="font-size:1rem"></i>Partilhar WA</a></div>');}
 
-// ── ARBITRAGE ──
-function findArbs(data,minP){var arbs=[];data.forEach(function(game){if(!game.bookmakers||game.bookmakers.length<2)return;var mkt=game.bookmakers[0]&&game.bookmakers[0].markets&&game.bookmakers[0].markets.find(function(m){return m.key==='h2h';});if(!mkt)return;var names=mkt.outcomes.map(function(o){return o.name;});for(var ii=0;ii<names.length;ii++){for(var jj=ii+1;jj<names.length;jj++){var b1={p:0,bm:''},b2={p:0,bm:''};game.bookmakers.forEach(function(bm){var m2=bm.markets&&bm.markets.find(function(mk){return mk.key==='h2h';});if(!m2)return;m2.outcomes.forEach(function(o){if(o.name===names[ii]&&o.price>b1.p)b1={p:o.price,bm:bm.title};if(o.name===names[jj]&&o.price>b2.p)b2={p:o.price,bm:bm.title};});});if(b1.p>0&&b2.p>0&&b1.bm!==b2.bm){var sum=1/b1.p+1/b2.p;if(sum<1){var pct=(1/sum-1)*100;if(pct>=minP){var bkEl=document.getElementById('arb-bank');var bk=parseFloat((bkEl&&bkEl.value)||'5000');var s1=(bk/b1.p)/sum,s2=(bk/b2.p)/sum;arbs.push({sport:game._sn||'',icon:game._si||'',home:game.home_team,away:game.away_team,o1:names[ii],bm1:b1.bm,odd1:b1.p,stake1:s1.toFixed(0),o2:names[jj],bm2:b2.bm,odd2:b2.p,stake2:s2.toFixed(0),pct:pct.toFixed(2),profitMZN:(s1*b1.p-bk).toFixed(0)});}}}}}});var seen=new Set(),unique=[];arbs.sort(function(a,b){return parseFloat(b.pct)-parseFloat(a.pct);});arbs.forEach(function(a){var k=a.home+a.o1+a.bm1;if(!seen.has(k)){seen.add(k);unique.push(a);}});return unique;}
-async function loadArb(){if(!G.allData.length){toast('Carrega os dados +EV primeiro','w');loadEV(true);return;}var minP=parseFloat(($('arb-min')&&$('arb-min').value)||'0');var arbs=findArbs(G.allData,minP);$('arb-cnt').textContent=arbs.length;if(arbs.length){var avg=arbs.reduce(function(s,a){return s+parseFloat(a.pct);},0)/arbs.length;$('arb-avg-pct').textContent=avg.toFixed(2)+'%';$('arb-best-pct').textContent='+'+arbs[0].pct+'%';}$('d-arb-c').textContent=arbs.length;var tb=$('arb-body');if(!arbs.length){tb.innerHTML='<tr><td colspan="12" class="empty">Nenhuma arbitragem encontrada. Tenta com min lucro 0%.</td></tr>';return;}tb.innerHTML=arbs.map(function(a){return'<tr style="border-bottom:1px solid rgba(255,255,255,.025)"><td style="padding:8px 7px;font-weight:700;color:var(--green);border-left:3px solid var(--green)">+'+a.pct+'%</td><td style="padding:8px 7px"><span class="sp-tag">'+a.icon+' '+a.sport+'</span></td><td style="padding:8px 7px"><strong style="font-size:.8rem;color:var(--t1)">'+a.home+'</strong><div style="font-size:.67rem;color:var(--t3)">vs '+a.away+'</div></td><td style="padding:8px 7px;font-weight:600;color:var(--t1)">'+a.o1+'</td><td style="padding:8px 7px"><span class="dot8" style="background:'+bkClr(a.bm1)+'"></span> '+a.bm1+'</td><td style="padding:8px 7px;font-weight:700;color:var(--green)">'+fmtOdd(a.odd1)+'</td><td style="padding:8px 7px">MZN '+a.stake1+'</td><td style="padding:8px 7px;font-weight:600;color:var(--t1)">'+a.o2+'</td><td style="padding:8px 7px"><span class="dot8" style="background:'+bkClr(a.bm2)+'"></span> '+a.bm2+'</td><td style="padding:8px 7px;font-weight:700;color:var(--green)">'+fmtOdd(a.odd2)+'</td><td style="padding:8px 7px">MZN '+a.stake2+'</td><td style="padding:8px 7px;font-weight:800;color:var(--green)">MZN '+a.profitMZN+'</td></tr>';}).join('');toast(arbs.length+' arbitragem(s)!','s');}
-
 // ── DASHBOARD ──
-async function loadDash(){if(!G.allData.length)await loadEV(true);renderDashEV(G.ev);renderDashArb(findArbs(G.allData,0));}
+async function loadDash(){if(!G.allData.length)await loadEV(true);renderDashEV(G.ev);}
 function renderDashEV(bets){$('d-ev-body').innerHTML=bets.slice(0,6).map(function(b){return'<tr onclick="evDetail('+b._i+')" style="cursor:pointer"><td><span class="sp-tag">'+b.icon+' '+b.sport+'</span></td><td><strong style="font-size:.8rem;color:var(--t1)">'+b.home+'</strong><div style="font-size:.67rem;color:var(--t3)">vs '+b.away+'</div></td><td style="color:var(--t1)">'+b.outcome+'</td><td><span style="display:flex;align-items:center;gap:5px"><span class="dot8" style="background:'+bkClr(b.book)+'"></span>'+b.book+'</span></td><td class="g-txt">'+fmtOdd(b.odds)+'</td><td style="color:var(--t2)">'+fmtOdd(parseFloat(b.fair))+'</td><td style="color:var(--green);font-weight:700">+'+b.ev+'%</td><td style="font-size:.7rem;color:var(--t3)">'+fmtTime(b.time)+'</td></tr>';}).join('')||'<tr><td colspan="8" class="empty">Sem dados. Configura a chave API.</td></tr>';}
-function renderDashArb(arbs){$('d-arb-c').textContent=arbs.length;$('d-arb-body').innerHTML=arbs.slice(0,5).map(function(a){return'<tr><td><span class="sp-tag">'+a.icon+' '+a.sport+'</span></td><td><strong style="font-size:.8rem;color:var(--t1)">'+a.home+'</strong><div style="font-size:.67rem;color:var(--t3)">vs '+a.away+'</div></td><td><span class="dot8" style="background:'+bkClr(a.bm1)+'"></span> '+a.bm1+'</td><td class="g-txt">'+fmtOdd(a.odd1)+'</td><td><span class="dot8" style="background:'+bkClr(a.bm2)+'"></span> '+a.bm2+'</td><td class="g-txt">'+fmtOdd(a.odd2)+'</td><td style="color:var(--green);font-weight:700">+'+a.pct+'%</td></tr>';}).join('')||'<tr><td colspan="7" class="empty">Sem arbitragens</td></tr>';}
-
 // ── LIVE SCORES ──
 var G_liveData=[];
 async function loadLive(){var grid=$('live-grid');grid.innerHTML='<div class="lv-empty"><div class="spin"></div><div style="margin-top:8px;color:var(--t3)">A carregar resultados ESPN...</div></div>';var cards=[];var loaded=0;var entries=Object.entries(ESPN_ENDPOINTS);await Promise.allSettled(entries.map(async function(entry){var key=entry[0],src=entry[1];try{var r=await fetch(src.url,{cache:'no-store',signal:AbortSignal.timeout(8000)});if(!r.ok)throw new Error(r.status);var data=await r.json();loaded++;(data.events||[]).forEach(function(ev){var comp=ev.competitions&&ev.competitions[0];if(!comp)return;var home=comp.competitors&&comp.competitors.find(function(t){return t.homeAway==='home';});var away=comp.competitors&&comp.competitors.find(function(t){return t.homeAway==='away';});cards.push({key:key,label:src.label,sport:src.sport,homeName:home&&home.team&&home.team.displayName||'Casa',awayName:away&&away.team&&away.team.displayName||'Fora',homeScore:home&&home.score!=null?home.score:null,awayScore:away&&away.score!=null?away.score:null,isLive:ev.status&&ev.status.type&&ev.status.type.state==='in',isFinal:ev.status&&ev.status.type&&ev.status.type.state==='post',clock:ev.status&&ev.status.displayClock||'',detail:ev.status&&ev.status.type&&ev.status.type.detail||'',period:ev.status&&ev.status.period||null,startTime:ev.date});});}catch(e){}}));G_liveData=cards;renderLive();if(loaded===0)grid.innerHTML='<div class="lv-empty">Nao foi possivel conectar a ESPN API.</div>';else toast('Live Scores: '+cards.length+' jogos de '+loaded+' ligas','s');}
@@ -1265,7 +1234,7 @@ function renderTracker(){
     var legsInfo=b.isTicket&&b.legs&&b.legs.length?'<div style="font-size:.6rem;color:var(--t3);margin-top:2px">'+b.legs.slice(0,2).join(' · ')+'</div>':'';
     var opts=[['p','Pending'],['w','Won'],['l','Lost'],['v','Void'],['hw','Half Won'],['hl','Half Lost']];
     var resDropdown='<select onchange="updBet('+b.id+',this.value)" style="background:var(--bg-card2);border:1px solid var(--border);color:'+rl.color+';padding:2px 5px;border-radius:5px;font-size:.68rem;cursor:pointer;outline:none;max-width:110px">'+opts.map(function(o){return'<option value="'+o[0]+'"'+(b.res===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>';
-    return'<tr><td style="font-size:.68rem;color:var(--t3);white-space:nowrap">'+b.date+'</td><td><strong style="font-size:.8rem">'+b.game+'</strong>'+legsInfo+'</td><td style="font-size:.74rem;color:var(--t2)">'+(b.mkt||'—')+'</td><td style="font-weight:600">'+fmtOdd(b.odd)+'</td><td style="color:var(--t3)">'+(b.fair?fmtOdd(b.fair):'—')+'</td><td>'+clvLbl+'</td><td style="color:var(--t2)">MZN '+b.stake+'</td><td>'+resDropdown+'</td><td><input type="text" value="'+(b.score||'')+'" placeholder="—" onchange="updScore('+b.id+',this.value)" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:2px 5px;border-radius:4px;font-size:.68rem;width:50px;outline:none;text-align:center">'+(b.scoreIsFinal?'<span style="font-size:.5rem;color:var(--green);font-weight:700;padding:1px 4px;background:rgba(124,194,69,.12);border-radius:3px;margin-left:2px">FT</span>':'')+'</td><td style="color:'+rl.color+';font-weight:700;white-space:nowrap">'+plLbl+'</td><td><button style="padding:2px 7px;font-size:.6rem;background:rgba(230,94,76,.1);color:var(--red);border:none;border-radius:5px;cursor:pointer" onclick="delBet('+b.id+')">X</button></td></tr>';
+    return'<tr><td style="font-size:.68rem;color:var(--t3);white-space:nowrap">'+b.date+'</td><td><strong style="font-size:.8rem">'+b.game+'</strong>'+legsInfo+'</td><td style="font-size:.74rem;color:var(--t2)">'+(b.mkt||'—')+'</td><td style="font-weight:600">'+fmtOdd(b.odd)+'</td><td style="color:var(--t3)">'+(b.fair?fmtOdd(b.fair):'—')+'</td><td>'+clvLbl+'</td><td style="color:var(--t2)">MZN '+b.stake+'</td><td><input type="text" value="'+(b.score||'')+'" placeholder="—" onchange="updScore('+b.id+',this.value)" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:2px 5px;border-radius:4px;font-size:.68rem;width:50px;outline:none;text-align:center">'+(b.scoreIsFinal?'<span style="font-size:.5rem;color:var(--green);font-weight:700;padding:1px 4px;background:rgba(124,194,69,.12);border-radius:3px;margin-left:2px">FT</span>':'')+'</td><td>'+resDropdown+'</td><td style="color:'+rl.color+';font-weight:700;white-space:nowrap">'+plLbl+'</td><td><button style="padding:2px 7px;font-size:.6rem;background:rgba(230,94,76,.1);color:var(--red);border:none;border-radius:5px;cursor:pointer" onclick="delBet('+b.id+')">X</button></td></tr>';
   }).join('');
 }
 
@@ -1447,7 +1416,7 @@ function buildSportsNav(){
 function quickSport(k){go('sportsbook');var s=$('sb-sport');if(s)s.value=k;G.sbSport=k;sbLoad();}
 
 // ── AUTO REFRESH ──
-function refreshAll(){var p=G.page;if(p==='sportsbook'&&G.sbSport)sbLoad();else if(p==='ev')loadEV(true);else if(p==='arbitrage')loadArb();else if(p==='live')loadLive();}
+function refreshAll(){var p=G.page;if(p==='sportsbook'&&G.sbSport)sbLoad();else if(p==='ev')loadEV(true);else if(p==='live')loadLive();}
 setInterval(function(){G.cd--;var el=$('cd-val');if(el)el.textContent=G.cd;if(G.cd<=0){G.cd=60;refreshAll();}},1000);
 
 // ── SEARCH ──
@@ -1477,9 +1446,4 @@ document.addEventListener('DOMContentLoaded',function(){
   go('dashboard');
   // FIX BUG 6: sincroniza botao Pre-Game como ativo
   var evPreBtn=$('evt-pre');if(evPreBtn){evPreBtn.style.background='var(--green-dim)';evPreBtn.style.color='var(--green)';}
-  if(ODDS_KEY&&ODDS_KEY.length>10){setTimeout(function(){testApiKey(ODDS_KEY);},1500);}
-  else{setApiStatus('err','Clica para configurar chave API');setTimeout(function(){var p=$('api-settings-panel');if(p&&p.style.display==='none')toggleApiSettings();},1000);}
-});
-</script>
-</body>
-</html>
+  if(ODDS_KEY&&ODDS_KEY.length>10){setTimeout(f
