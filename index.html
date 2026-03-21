@@ -537,7 +537,7 @@ button,input,select,textarea{font-family:'Inter',sans-serif;cursor:pointer}
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
           <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--t3)">Desporto</label><select id="ev-sport" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:6px 9px;border-radius:6px;font-size:.78rem;outline:none"><option value="all">Todos</option></select></div>
           <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--t3)">Min EV%</label><select id="ev-min" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:6px 9px;border-radius:6px;font-size:.78rem;outline:none"><option value="0" selected>Todos</option><option value="1">+1%</option><option value="2">+2%</option><option value="3">+3%</option><option value="5">+5%</option></select></div>
-          <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--t3)">Mercado</label><select id="ev-mkt-f" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:6px 9px;border-radius:6px;font-size:.78rem;outline:none"><option value="all">Todos</option><option value="h2h">Moneyline</option><option value="totals">Totals</option><option value="spreads">Spreads</option></select></div>
+          <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:.6rem;font-weight:600;text-transform:uppercase;color:var(--t3)">Mercado</label><select id="ev-mkt-f" style="background:var(--bg-card2);border:1px solid var(--border);color:var(--t1);padding:6px 9px;border-radius:6px;font-size:.78rem;outline:none"><option value="all">Todos</option><option value="h2h">Moneyline</option><option value="h2h_lay">Lay (Exchange)</option><option value="spreads">Handicap</option><option value="alternate_spreads">Asian Handicap</option><option value="totals">Over/Under</option><option value="alternate_totals">Alt Totals</option><option value="team_totals">Team Totals</option><option value="btts">BTTS</option><option value="draw_no_bet">Draw No Bet</option></select></div>
           <button class="btn btn-blue" onclick="loadEV(true)"><i class="fas fa-search"></i>Aplicar</button>
         </div>
       </div>
@@ -1094,7 +1094,72 @@ function sbRender(){if(!G.sbData.length)return;var fBM=($('sb-bk-filter')&&$('sb
 function fairOdd(game,mktKey,outName){var sharp=['pinnacle','betfair_ex_eu','betfair','smarkets','matchbook'];var sO=[],aO=[];game.bookmakers&&game.bookmakers.forEach(function(bm){bm.markets&&bm.markets.forEach(function(m){if(m.key===mktKey)m.outcomes&&m.outcomes.forEach(function(o){if(o.name===outName){if(sharp.includes(bm.key))sO.push(o.price);aO.push(o.price);}});});});var ref;if(sO.length)ref=sO.reduce(function(a,b){return a+b;})/sO.length;else if(aO.length>=2){aO.sort(function(a,b){return a-b;});var m=Math.floor(aO.length/2);ref=aO.length%2?aO[m]:(aO[m-1]+aO[m])/2;}else return null;var refBm=game.bookmakers&&game.bookmakers.find(function(b){return sharp.includes(b.key);})||game.bookmakers&&game.bookmakers[0];if(refBm){var refM=refBm.markets&&refBm.markets.find(function(m){return m.key===mktKey;});if(refM){var tp=refM.outcomes.reduce(function(s,o){return s+1/o.price;},0);return 1/((1/ref)/tp);}}return ref*1.04;}
 
 // -- EV --
-function findEV(data,minEV){minEV=(minEV===undefined||minEV===null)?0:minEV;var res=[];data.forEach(function(game){if(!game.bookmakers||game.bookmakers.length<2)return;game.bookmakers.forEach(function(bm){bm.markets&&bm.markets.forEach(function(mkt){mkt.outcomes&&mkt.outcomes.forEach(function(out){var fair=fairOdd(game,mkt.key,out.name);if(!fair||out.price<=fair)return;var ev=calcEV(out.price,fair);if(ev<minEV)return;var avgPrices=[];game.bookmakers&&game.bookmakers.forEach(function(b2){var m2=b2.markets&&b2.markets.find(function(mk){return mk.key===mkt.key;});var o2=m2&&m2.outcomes&&m2.outcomes.find(function(oc){return oc.name===out.name;});if(o2)avgPrices.push(o2.price);});var avgPrice=avgPrices.length?avgPrices.reduce(function(a,b){return a+b;})/avgPrices.length:out.price;res.push({sport:game._sn||'',icon:game._si||'\u26BD',sk:game._sk||'',home:game.home_team,away:game.away_team,game:game.home_team+' vs '+game.away_team,mkt:mkt.key==='h2h'?'Moneyline':mkt.key==='spreads'?'Spread':mkt.key==='totals'?'O/U':mkt.key,mktKey:mkt.key,outcome:out.name,point:out.point!=null?out.point:null,book:bm.title,bkey:bm.key,odds:out.price,avgOdds:avgPrice,fair:fair.toFixed(2),ev:ev.toFixed(2),kelly:calcKelly(out.price,fair).toFixed(2),time:game.commence_time,_game:game});});});});});res.sort(function(a,b){return parseFloat(b.ev)-parseFloat(a.ev);});res.forEach(function(r,i){r._i=i;});return res;}
+function mktLabelEV(key,point,outName){
+  var p=point!=null,o=outName||'';
+  if(key==='h2h')return'Moneyline';
+  if(key==='h2h_lay')return'Lay (Exchange)';
+  if(key==='btts')return'BTTS';
+  if(key==='draw_no_bet')return'Draw No Bet';
+  if(key==='spreads')return'Handicap'+(p?' '+(point>0?'+':'')+point:'');
+  if(key==='alternate_spreads')return'AH'+(p?' '+(point>0?'+':'')+point:'');
+  if(key==='totals')return(o.toLowerCase().includes('over')?'Over':'Under')+(p?' '+Math.abs(point):'');
+  if(key==='alternate_totals')return'Alt '+(o.toLowerCase().includes('over')?'Over':'Under')+(p?' '+Math.abs(point):'');
+  if(key==='team_totals')return o.split(' ').slice(-1)[0]+' Total'+(p?' '+Math.abs(point):'');
+  return key.replace(/_/g,' ');
+}
+function findEV(data,minEV){
+  minEV=(minEV===undefined||minEV===null)?0:minEV;
+  var res=[];
+  data.forEach(function(game){
+    if(!game.bookmakers||game.bookmakers.length<2)return;
+    game.bookmakers.forEach(function(bm){
+      bm.markets&&bm.markets.forEach(function(mkt){
+        mkt.outcomes&&mkt.outcomes.forEach(function(out){
+          var fair=fairOdd(game,mkt.key,out.name);
+          if(!fair||fair<=1)return;
+          // For lay bets: value when offered price > fair (same logic actually works)
+          // EV for lay = (1-1/out.price) * (1/fair - 1) -- but we keep standard EV formula
+          if(out.price<=1.01)return; // skip invalid odds
+          var ev=calcEV(out.price,fair);
+          if(ev<minEV)return;
+          var avgPrices=[];
+          game.bookmakers.forEach(function(b2){
+            var m2=b2.markets&&b2.markets.find(function(mk){return mk.key===mkt.key;});
+            var o2=m2&&m2.outcomes&&m2.outcomes.find(function(oc){
+              return oc.name===out.name&&(out.point==null||oc.point==null||Math.abs((oc.point||0)-(out.point||0))<0.1);
+            });
+            if(o2&&o2.price>1)avgPrices.push(o2.price);
+          });
+          var avgPrice=avgPrices.length?avgPrices.reduce(function(a,b){return a+b;})/avgPrices.length:out.price;
+          var isLay=mkt.key==='h2h_lay';
+          res.push({
+            sport:game._sn||'',icon:game._si||'\u26BD',sk:game._sk||'',
+            home:game.home_team,away:game.away_team,
+            game:game.home_team+' vs '+game.away_team,
+            mkt:mktLabelEV(mkt.key,out.point,out.name),
+            mktKey:mkt.key,outcome:out.name,
+            point:out.point!=null?out.point:null,
+            book:bm.title,bkey:bm.key,
+            odds:out.price,avgOdds:avgPrice,
+            fair:fair.toFixed(2),ev:ev.toFixed(2),
+            kelly:calcKelly(out.price,fair).toFixed(2),
+            time:game.commence_time,isLay:isLay,_game:game
+          });
+        });
+      });
+    });
+  });
+  // Deduplicate: keep best EV per game+market+outcome combo
+  var best={};
+  res.forEach(function(b){
+    var key=b.game+'|'+b.mktKey+'|'+b.outcome+(b.point!=null?'|'+b.point:'');
+    if(!best[key]||parseFloat(b.ev)>parseFloat(best[key].ev))best[key]=b;
+  });
+  var deduped=Object.values(best);
+  deduped.sort(function(a,b){return parseFloat(b.ev)-parseFloat(a.ev);});
+  deduped.forEach(function(r,i){r._i=i;});
+  return deduped;
+}
 function getCounter(b){var g=b._game;if(!g)return null;var cn=null;if(b.outcome.toLowerCase().startsWith('over'))cn=b.outcome.replace(/over/i,'Under');else if(b.outcome.toLowerCase().startsWith('under'))cn=b.outcome.replace(/under/i,'Over');else{var m=g.bookmakers&&g.bookmakers[0]&&g.bookmakers[0].markets&&g.bookmakers[0].markets.find(function(mk){return mk.key==='h2h';});var ot=m&&m.outcomes&&m.outcomes.filter(function(o){return o.name!==b.outcome;});if(ot&&ot.length)cn=ot[0].name;}if(!cn)return null;var bp=0,bb='';g.bookmakers&&g.bookmakers.forEach(function(bm){bm.markets&&bm.markets.forEach(function(m){m.outcomes&&m.outcomes.forEach(function(o){if(o.name===cn&&o.price>bp){bp=o.price;bb=bm.title;}});});});if(!bp)return null;return{outcome:cn,odds:bp,book:bb,nv:fairOdd(g,b.mktKey,cn)};}
 async function loadEV(force){
   if(!force&&G.ev.length){evRender(G.ev);return;}
@@ -1102,6 +1167,9 @@ async function loadEV(force){
   $('ev-body').innerHTML='<tr><td colspan="9" class="empty"><div class="spin"></div><div style="margin-top:8px;color:var(--t3)">A carregar odds...</div></td></tr>';
   // +EV: todos os desportos Tier 1 disponiveis
   var keys=SPORTS.filter(function(s){return s.tier===1;});
+  // Show progress  
+  var evTotal=keys.length;
+  toast('A carregar '+evTotal+' ligas (pode demorar ~'+Math.ceil(evTotal*0.5)+'s)...','i');
   G.allData=await fetchMulti(keys);
   if(!G.allData.length){$('ev-body').innerHTML='<tr><td colspan="9" class="empty"><div style="margin-bottom:10px"><i class="fas fa-calendar-times" style="font-size:2rem;color:var(--t4)"></i></div><div style="color:var(--t2);font-weight:600;margin-bottom:6px">Sem jogos agendados agora nas ligas activas</div><div style="font-size:.74rem;color:var(--t3)">A API esta activa. Tenta novamente mais tarde ou verifica se ha jogos disponiveis.</div></td></tr>';return;}
   var minEV=parseFloat(($('ev-min')&&$('ev-min').value)||'0');
@@ -1118,7 +1186,7 @@ async function loadEV(force){
   evRender(G.evTab==='live'?bets.filter(function(b){return new Date(b.time)<now;}):bets.filter(function(b){return new Date(b.time)>=now;}));
   $('d-gm-c').textContent=G.allData.length;var bms=new Set();G.allData.forEach(function(g){g.bookmakers&&g.bookmakers.forEach(function(b){bms.add(b.title);});});$('d-bk-c').textContent=bms.size;$('d-ev-c').textContent=bets.length;renderDashEV(bets);
 }
-function evRender(bets){var tb=$('ev-body');if(!bets.length){tb.innerHTML='<tr><td colspan="9" class="empty">Nenhuma aposta +EV encontrada com estes filtros</td></tr>';return;}var seen=new Set(),rows=[];bets.forEach(function(b){var key=b.game+'|'+b.mktKey+'|'+b.outcome+'|'+b.book;if(seen.has(key))return;seen.add(key);var ctr=getCounter(b);var stk='MZN '+Math.max(100,Math.round(parseFloat(b.kelly)*2)*100);var _evPos=parseFloat(b.ev)>=0;rows.push('<tr class="ev-r'+(_evPos?' pos':'"')+' onclick="evDetail('+b._i+')"><td style="padding:0"><div style="padding:9px 8px 2px 12px"><span class="ev-pct">+'+b.ev+'%</span></div><div style="padding:0 8px 9px 12px;font-size:.63rem;color:var(--t3)">EV</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-size:.82rem;font-weight:600;color:var(--t1)">'+stk+'</div><div style="padding:0 8px 9px;font-size:.63rem;color:var(--t3)">Stake rec.</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-size:.76rem;color:var(--t1)">'+fmtTime(b.time)+'</div><div style="padding:0 8px 9px;font-size:.63rem;color:var(--t3)">Hora</div></td><td style="padding:0"><div style="padding:9px 8px 2px"><div style="font-size:.82rem;font-weight:600;color:var(--t1)">'+b.home+' vs '+b.away+'</div></div><div style="padding:0 8px 9px;font-size:.65rem;color:var(--t3)">'+b.icon+' '+b.sport+'</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-size:.8rem;font-weight:500;color:var(--t2)">'+b.mkt+(b.point!=null?' '+Math.abs(b.point):'')+'</div><div style="padding:0 8px 9px;font-size:.63rem;color:var(--t3)">Mercado</div></td><td style="padding:0"><div style="padding:9px 8px 2px"><span style="font-weight:700;color:var(--green);font-size:.84rem">'+b.outcome+'</span><span style="color:var(--green);font-weight:700;margin-left:6px">'+d2am(b.odds)+'</span></div><div style="padding:0 8px 9px;font-size:.72rem;color:var(--t3)">'+(ctr?ctr.outcome+' '+d2am(ctr.odds):'--')+'</div></td><td style="padding:0"><div style="padding:9px 8px 2px"><span class="bk-tag" style="background:'+bkClr(b.book)+'22;border:1px solid '+bkClr(b.book)+'44"><span class="dot8" style="background:'+bkClr(b.book)+'"></span>'+(b.book.length>12?b.book.slice(0,11)+'\u2026':b.book)+'</span></div><div style="padding:0 8px 9px">'+(ctr?'<span class="bk-tag" style="font-size:.7rem;color:var(--t3)"><span class="dot8" style="background:'+bkClr(ctr.book)+'"></span>'+(ctr.book.length>12?ctr.book.slice(0,11)+'\u2026':ctr.book)+'</span>':'<span style="color:var(--t4);font-size:.72rem">\u2014</span>')+'</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-weight:600;font-size:.8rem;color:var(--t2)">'+(b.fair?d2am(parseFloat(b.fair)):'\u2014')+'</div><div style="padding:0 8px 9px;font-size:.72rem;color:var(--t3)">'+(ctr&&ctr.nv?d2am(ctr.nv):'\u2014')+'</div></td><td style="padding:9px 8px;text-align:center"><span class="kelly-tag">'+b.kelly+'%</span></td></tr>');});tb.innerHTML=rows.join('');}
+function evRender(bets){var tb=$('ev-body');if(!bets.length){tb.innerHTML='<tr><td colspan="9" class="empty">Nenhuma aposta +EV encontrada com estes filtros</td></tr>';return;}var seen=new Set(),rows=[];bets.forEach(function(b){var key=b.game+'|'+b.mktKey+'|'+b.outcome+(b.point!=null?'|'+b.point:'');if(seen.has(key))return;seen.add(key);var ctr=getCounter(b);var _bal=getBalance()||5000;var _k=parseFloat(b.kelly)||0;var _stk=Math.max(100,Math.round((_bal*_k/100)/50)*50);var stk='MZN '+_stk;var _evPos=parseFloat(b.ev)>=0;var isLay=b.isLay||b.mktKey==='h2h_lay';var isHandicap=b.mktKey==='spreads'||b.mktKey==='alternate_spreads';var isTotal=b.mktKey==='totals'||b.mktKey==='alternate_totals'||b.mktKey==='team_totals';var mktBadge=isLay?'<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);border-radius:3px;padding:1px 5px;font-size:.58rem;font-weight:700;color:#c4b5fd;margin-left:4px">LAY</span>':isHandicap?'<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,168,232,.1);border:1px solid rgba(0,168,232,.25);border-radius:3px;padding:1px 5px;font-size:.58rem;font-weight:700;color:var(--blue);margin-left:4px">AH</span>':isTotal?'<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:3px;padding:1px 5px;font-size:.58rem;font-weight:700;color:var(--yellow);margin-left:4px">TOT</span>':'';rows.push('<tr class="ev-r'+(_evPos?' pos':'')+'" onclick="evDetail('+b._i+')"><td style="padding:0"><div style="padding:9px 8px 2px 12px"><span class="ev-pct">+'+b.ev+'%</span></div><div style="padding:0 8px 9px 12px;font-size:.63rem;color:var(--t3)">EV</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-size:.82rem;font-weight:600;color:var(--t1)">'+stk+'</div><div style="padding:0 8px 9px;font-size:.63rem;color:var(--t3)">Stake rec.</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-size:.76rem;color:var(--t1)">'+fmtTime(b.time)+'</div><div style="padding:0 8px 9px;font-size:.63rem;color:var(--t3)">Hora</div></td><td style="padding:0"><div style="padding:9px 8px 2px"><div style="font-size:.82rem;font-weight:600;color:var(--t1)">'+b.home+' vs '+b.away+'</div></div><div style="padding:0 8px 9px;font-size:.65rem;color:var(--t3)">'+b.icon+' '+b.sport+'</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-size:.8rem;font-weight:500;color:var(--t2)">'+b.mkt+(b.point!=null?' '+Math.abs(b.point):'')+'</div><div style="padding:0 8px 9px;font-size:.63rem;color:var(--t3)">Mercado</div></td><td style="padding:0"><div style="padding:9px 8px 2px"><span style="font-weight:700;color:var(--green);font-size:.84rem">'+b.outcome+'</span><span style="color:var(--green);font-weight:700;margin-left:6px">'+d2am(b.odds)+'</span></div><div style="padding:0 8px 9px;font-size:.72rem;color:var(--t3)">'+(ctr?ctr.outcome+' '+d2am(ctr.odds):'--')+'</div></td><td style="padding:0"><div style="padding:9px 8px 2px"><span class="bk-tag" style="background:'+bkClr(b.book)+'22;border:1px solid '+bkClr(b.book)+'44"><span class="dot8" style="background:'+bkClr(b.book)+'"></span>'+(b.book.length>12?b.book.slice(0,11)+'\u2026':b.book)+'</span></div><div style="padding:0 8px 9px">'+(ctr?'<span class="bk-tag" style="font-size:.7rem;color:var(--t3)"><span class="dot8" style="background:'+bkClr(ctr.book)+'"></span>'+(ctr.book.length>12?ctr.book.slice(0,11)+'\u2026':ctr.book)+'</span>':'<span style="color:var(--t4);font-size:.72rem">\u2014</span>')+'</div></td><td style="padding:0"><div style="padding:9px 8px 2px;font-weight:600;font-size:.8rem;color:var(--t2)">'+(b.fair?d2am(parseFloat(b.fair)):'\u2014')+'</div><div style="padding:0 8px 9px;font-size:.72rem;color:var(--t3)">'+(ctr&&ctr.nv?d2am(ctr.nv):'\u2014')+'</div></td><td style="padding:9px 8px;text-align:center"><span class="kelly-tag">'+b.kelly+'%</span></td></tr>');});tb.innerHTML=rows.join('');}
 function setEVTab(mode,el){G.evTab=mode;$$('#pg-ev button[id^="evt"]').forEach(function(b){b.style.background='none';b.style.color='var(--t3)';});el.style.background='var(--green-dim)';el.style.color='var(--green)';var now=new Date();evRender(mode==='live'?G.ev.filter(function(b){return new Date(b.time)<now;}):G.ev.filter(function(b){return new Date(b.time)>=now;}));}
 function toggleEVF(){var p=$('ev-filter-panel');p.style.display=p.style.display==='none'?'block':'none';}
 function evDetail(i){var b=G.ev[i];if(!b)return;var ctr=getCounter(b);openModal('+EV \u2014 Detalhe da Aposta','<div style="display:grid;gap:10px"><div style="padding:12px;background:var(--bg-card2);border-radius:8px"><div style="font-weight:700;font-size:.9rem;color:var(--t1)">'+b.game+'</div><div style="font-size:.7rem;color:var(--t3);margin-top:3px">'+b.icon+' '+b.sport+'</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="padding:14px;background:var(--bg-card2);border:1px solid var(--green-brd);border-radius:8px;text-align:center"><div style="font-size:.58rem;color:var(--t3);margin-bottom:4px;text-transform:uppercase">Expected Value</div><div style="font-size:2rem;font-weight:800;color:var(--green)">+'+b.ev+'%</div></div><div style="padding:14px;background:var(--bg-card2);border:1px solid var(--blue-brd);border-radius:8px;text-align:center"><div style="font-size:.58rem;color:var(--t3);margin-bottom:4px;text-transform:uppercase">Kelly %</div><div style="font-size:2rem;font-weight:800;color:var(--blue)">'+b.kelly+'%</div></div></div><table style="width:100%;font-size:.8rem;border-collapse:collapse">'+[['Aposta','<strong>'+b.outcome+'</strong>'],['Casa',b.book],['Odd',b.odds.toFixed(2)],['No-Vig',b.fair],['Stake Rec.','MZN '+Math.max(100,Math.round(parseFloat(b.kelly)*2)*100)],...(ctr?[['Contra-Aposta',ctr.outcome+' @ '+d2am(ctr.odds)+' ('+ctr.book+')']]:[])] .map(function(r){return'<tr style="border-bottom:1px solid rgba(255,255,255,.025)"><td style="padding:6px 0;color:var(--t3)">'+r[0]+'</td><td style="padding:6px 0;text-align:right;color:var(--t1)">'+r[1]+'</td></tr>';}).join('')+'</table><a href="https://wa.me/258840330540?text=+EV: '+encodeURIComponent(b.game+' | '+b.outcome+' '+d2am(b.odds)+' EV: +'+b.ev+'%')+'" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#1da462,#138a4e);color:#fff;padding:10px;border-radius:7px;font-size:.78rem;font-weight:700;text-decoration:none"><i class="fab fa-whatsapp" style="font-size:1rem"></i>Partilhar WA</a></div>');}
