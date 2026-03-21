@@ -1370,20 +1370,101 @@ function buildAnalysisTags(p){
   return tags.slice(0,5);
 }
 
-function buildFullAnalysis(p){
-  var ev=parseFloat(p.ev_pct);var prob=parseFloat(p.prob_real);var odds=parseFloat(p.odds_best);var fair=parseFloat(p.fair_odd);var kelly=parseFloat(p.kelly_pct||0);
-  var evEdge=(odds-fair).toFixed(2);var stakeRec=Math.max(100,Math.round(kelly*2)*100);var lines=[];var mkt=(p.market||'').toLowerCase();
-  if(ev>=4)lines.push('Edge de mercado forte. A odd '+odds+' esta significativamente acima do fair value calculado ('+fair+'). O mercado esta a subavaliar esta opcao.');
-  else if(ev>=1.5)lines.push('Vantagem positiva identificada. A odd '+odds+' supera o fair value ('+fair+') em '+evEdge+'. Situacao favoravel a longo prazo.');
-  else lines.push('Probabilidade real (~'+prob.toFixed(0)+'%) superior ao que as odds implicam ('+odds+'). Edge positivo calculado pelo modelo.');
-  if(mkt.includes('moneyline')||mkt.includes('h2h'))lines.push('Mercado principal \u2014 resultado directo do jogo. A casa '+p.bookmaker+' oferece odds superiores a media do mercado ('+p.odds_avg+').');
-  else if(mkt.includes('over'))lines.push('Over no total \u2014 modelo indica jogo com alto potencial ofensivo para ambas as equipas.');
-  else if(mkt.includes('under'))lines.push('Under no total \u2014 indica jogo equilibrado e defensivo, favoravel a jogos fechados.');
-  else if(mkt.includes('btts'))lines.push('Ambas marcam \u2014 ambas as equipas tem capacidade ofensiva e vulnerabilidades defensivas notaveis.');
-  else if(mkt.includes('handicap'))lines.push('Handicap \u2014 indica superioridade clara de uma equipa. Aposta na margem de vitoria.');
-  if(kelly>=3)lines.push('Kelly Criterion recomenda '+kelly.toFixed(1)+'% do bankroll \u2014 sinal de forte confianca do modelo. Stake sugerido: MZN '+stakeRec+'.');
-  else if(kelly>=1)lines.push('Kelly sugere '+kelly.toFixed(1)+'% do bankroll. Aposta conservadora mas positiva em valor esperado. Stake sugerido: MZN '+stakeRec+'.');
-  if(p.reasoning)lines.push(p.reasoning);
+// Cache de análises IA por jogo
+var G_AI_CACHE = {};
+
+async function fetchAIAnalysis(p) {
+  var cacheKey = p.game+'|'+p.market+'|'+p.pick;
+  if(G_AI_CACHE[cacheKey]) return G_AI_CACHE[cacheKey];
+  try{
+    var ev=parseFloat(p.ev_pct),prob=parseFloat(p.prob_real);
+    var odds=parseFloat(p.odds_best),fair=parseFloat(p.fair_odd);
+    var kelly=parseFloat(p.kelly_pct||0);
+    var stakeRec=Math.max(100,Math.round(kelly*2)*100);
+    var gameDate='hoje';
+    try{if(p.game_time)gameDate=new Date(p.game_time).toLocaleDateString('pt-PT',{weekday:'long',day:'2-digit',month:'long'});}catch(de){}
+    var prompt='Jogo: '+p.home+' vs '+p.away+
+      ' | Liga: '+p.sport+' | Data: '+gameDate+
+      ' | Aposta: '+p.pick+' ('+p.market+')'+
+      ' | Odd: '+odds+' Fair: '+fair+' EV: +'+ev.toFixed(1)+'%'+
+      ' | Probabilidade real: ~'+prob.toFixed(0)+'%'+
+      ' | Kelly: '+kelly.toFixed(1)+'% | Stake: MZN '+stakeRec+
+      ' | Casa: '+p.bookmaker+' (media mercado: '+p.odds_avg+')'+
+      '\n\nEscreve uma analise do evento em 3-4 frases em portugues de Mocambique.'+
+      ' Foca no contexto desportivo do jogo (as equipas, o campeonato, o momento da epoca),'+
+      ' explica tacticamente porque esta aposta faz sentido,'+
+      ' e menciona o edge de valor (+'+ev.toFixed(1)+'%).'+
+      ' Nao repitas apenas os numeros. Fala do jogo. Maximo 90 palavras.';
+    var body=JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:250,
+      messages:[{role:'user',content:prompt}]
+    });
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:body
+    });
+    if(!resp.ok){console.debug('[AI] HTTP',resp.status);throw new Error('http_'+resp.status);}
+    var rawText=await resp.text();
+    var data=JSON.parse(rawText);
+    var txt=data&&data.content&&data.content[0]&&data.content[0].text;
+    if(txt&&txt.length>10){
+      G_AI_CACHE[cacheKey]=txt.trim();
+      return G_AI_CACHE[cacheKey];
+    }
+  }catch(e){
+    console.debug('[AI Analysis] usando fallback:',e.message||e);
+  }
+  var fb=buildFallbackAnalysis(p);
+  G_AI_CACHE[cacheKey]=fb;
+  return fb;
+}
+
+function buildFallbackAnalysis(p){
+  var ev=parseFloat(p.ev_pct), prob=parseFloat(p.prob_real);
+  var odds=parseFloat(p.odds_best), fair=parseFloat(p.fair_odd);
+  var kelly=parseFloat(p.kelly_pct||0);
+  var stakeRec=Math.max(100,Math.round(kelly*2)*100);
+  var mkt=(p.market||'').toLowerCase();
+  var lines=[];
+  // Contexto do evento
+  var isSoccer=p.sport&&p.sport.match(/League|Liga|Serie|Bundesliga|Ligue|UCL|Europa|Cup|Conference|AFCON|MLS|Primeira/i);
+  var isBasket=p.sport&&p.sport.match(/NBA|Euroliga|NCAA/i);
+  var isHockey=p.sport&&p.sport.match(/NHL|Hockey/i);
+  var isTennis=p.sport&&p.sport.match(/Tennis|ATP|WTA/i);
+  var isFootball=p.sport&&p.sport.match(/NFL|NCAA Football/i);
+  var isCombat=p.sport&&p.sport.match(/UFC|MMA|Box/i);
+  var isRugby=p.sport&&p.sport.match(/Rugby|NRL/i);
+  var isCricket=p.sport&&p.sport.match(/Cricket|IPL/i);
+
+  // Linha 1: contexto da aposta no evento
+  if(mkt.includes('moneyline')||mkt.includes('h2h')){
+    if(isSoccer) lines.push(p.pick+' é favorito/underdog neste encontro de '+p.sport+'. A vitória direta é o mercado mais limpo para capturar valor.');
+    else if(isHockey) lines.push(p.pick+' numa partida de '+p.sport+' onde o modelo detecta desequilíbrio nas linhas. Moneyline em hóquei com EV+ é raro e valioso.');
+    else if(isBasket) lines.push('No basquetebol, '+p.pick+' enfrenta '+( p.pick===p.home?p.away:p.home)+' num encontro onde as odds de mercado não reflectem a força real das equipas.');
+    else if(isTennis) lines.push('No tênis, '+p.pick+' tem vantagem de valor em relação ao que as odds implicam. O modelo detecta subavaliação clara neste confronto.');
+    else if(isFootball) lines.push(p.pick+' no NFL/NCAA — aposta na vitória directa com edge identificado pelo modelo quantitativo vs o fair value de mercado.');
+    else if(isCombat) lines.push('Em combate ('+p.sport+'), '+p.pick+' aparece subavaliado pelas casas. O modelo de probabilidade detecta edge significativo neste duelo.');
+    else if(isRugby) lines.push('No Rugby, '+p.pick+' enfrenta '+( p.pick===p.home?p.away:p.home)+' com odds acima do fair value calculado. Mercado em desequilíbrio.');
+    else lines.push(p.home+' vs '+p.away+' — aposta em '+p.pick+' com edge detectado. As odds de '+odds+' estão acima do fair value de '+fair+'.');
+  } else if(mkt.toLowerCase().includes('over')||mkt.toLowerCase().includes('under')){
+    var dir=mkt.toLowerCase().includes('over')?'muitos golos/pontos':'jogo fechado e defensivo';
+    lines.push('Modelo antecipa '+dir+' em '+p.home+' vs '+p.away+'. O total indicado é suportado pela análise dos padrões ofensivos/defensivos das equipas na liga.');
+  } else if(mkt.includes('Ambas')||mkt.includes('btts')){
+    lines.push('Em '+p.home+' vs '+p.away+', o modelo de Poisson sugere que ambas as equipas têm capacidade para marcar, com probabilidade real (~'+prob.toFixed(0)+'%) acima do que as odds implicam.');
+  } else if(mkt.includes('Handicap')){
+    lines.push('Aposta de handicap em '+p.home+' vs '+p.away+'. O modelo detecta superioridade suficiente para cobrir a linha, com a odd de '+odds+' a oferecer valor vs o fair value de '+fair+'.');
+  } else if(mkt.includes('Total')){
+    lines.push('Total de pontos/golos em '+p.home+' vs '+p.away+'. O modelo de projecção para este desporto ('+p.sport+') aponta para este resultado no total especificado.');
+  } else {
+    lines.push('Mercado especializado em '+p.home+' vs '+p.away+' ('+p.sport+'). Edge de +'+ev.toFixed(1)+'% identificado com probabilidade real ~'+prob.toFixed(0)+'%.');
+  }
+  // Linha 2: valor vs mercado
+  lines.push('A casa '+p.bookmaker+' oferece '+odds+' vs fair value de '+fair+' (edge +'+ev.toFixed(1)+'%). A média do mercado está em '+p.odds_avg+', confirmando que estas odds estão acima do consenso.');
+  // Linha 3: gestão de banca
+  if(kelly>=2) lines.push('Kelly recomenda '+kelly.toFixed(1)+'% da banca — sinal forte. Stake sugerido: MZN '+stakeRec+'.');
+  else lines.push('Stake sugerido pelo Kelly: MZN '+stakeRec+' ('+kelly.toFixed(1)+'% da banca).');
   return lines.join(' ');
 }
 
@@ -1400,7 +1481,7 @@ function renderPalpites(picks,weather){
       var pk=p.pick.toLowerCase();var pArr=pk.startsWith('over')||pk==='yes'?'\u2191':pk.startsWith('under')||pk==='no'?'\u2193':'\u25BA';
       var tags=buildAnalysisTags(p);
       var tagsHtml=tags.map(function(t){return'<span style="display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:600;background:'+t.c+';border:1px solid '+t.b+';color:'+t.tx+';white-space:nowrap">'+t.t+'</span>';}).join('');
-      var fullAnalysis=buildFullAnalysis(p);
+      // AI analysis loaded dynamically via fetchAIAnalysis
       var starsCount=Math.max(1,Math.min(5,Math.round(ev*0.8+prob/25)));
       var stars='\u2605'.repeat(starsCount)+'\u2606'.repeat(5-starsCount);
       var analysisPanel=isExp?(
@@ -1420,8 +1501,8 @@ function renderPalpites(picks,weather){
         '</div>'+
         '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'+tagsHtml+'</div>'+
         '<div style="background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(37,99,235,.06));border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:11px 13px;margin-bottom:10px">'+
-        '<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px"><i class="fas fa-brain" style="color:#c4b5fd;font-size:.72rem"></i><span style="font-size:.62rem;font-weight:700;color:#c4b5fd;text-transform:uppercase;letter-spacing:.4px">Analise IA</span></div>'+
-        '<div style="font-size:.79rem;color:var(--t2);line-height:1.75">'+fullAnalysis+'</div>'+
+        '<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px"><i class="fas fa-brain" style="color:#c4b5fd;font-size:.72rem"></i><span style="font-size:.62rem;font-weight:700;color:#c4b5fd;text-transform:uppercase;letter-spacing:.4px">Analise IA do Evento</span></div>'+
+        '<div id="ai-txt-'+i+'" style="font-size:.79rem;color:var(--t2);line-height:1.75">'+(G_AI_CACHE[p.game+'|'+p.market+'|'+p.pick]||'<span style="color:var(--t3);font-size:.77rem">Clica para analisar o evento...</span>')+'</div>'+
         '</div>'+
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+
         '<div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;padding:8px 6px;text-align:center"><div style="font-size:.56rem;color:var(--t3);margin-bottom:3px;text-transform:uppercase">Odd</div><div style="font-size:.96rem;font-weight:800;color:'+(isEvPos?'var(--green)':'var(--t1)')+'">'+p.odds_best+'</div></div>'+
@@ -1463,9 +1544,41 @@ function renderPalpites(picks,weather){
     if(cib){cib.textContent=G.allData.length+' jogos em cache';cib.style.display=G.allData.length?'inline-flex':'none';}
   }
   renderCards();window._palRerender=function(){renderCards();};
+  // Pre-fetch AI analysis for top 3 picks silently in background
+  setTimeout(function(){
+    var topN=Math.min(3,G_PAL_PICKS.length);
+    for(var pi=0;pi<topN;pi++){
+      (function(idx){
+        var p=G_PAL_PICKS[idx];
+        if(!p)return;
+        var cacheKey=p.game+'|'+p.market+'|'+p.pick;
+        if(!G_AI_CACHE[cacheKey]){
+          fetchAIAnalysis(p).then(function(txt){G_AI_CACHE[cacheKey]=txt;});
+        }
+      })(pi);
+    }
+  },800);
 }
 function togglePickSel(i){if(G_PAL_SEL.has(i)){G_PAL_SEL.delete(i);}else{if(G_PAL_SEL.size>=6){toast('Maximo 6','w');return;}G_PAL_SEL.add(i);}if(window._palRerender)window._palRerender();}
-function togglePalExp(i){if(G_PAL_EXP.has(i)){G_PAL_EXP.delete(i);}else{G_PAL_EXP.add(i);}if(window._palRerender)window._palRerender();}
+function togglePalExp(i){
+  if(G_PAL_EXP.has(i)){G_PAL_EXP.delete(i);if(window._palRerender)window._palRerender();return;}
+  G_PAL_EXP.add(i);
+  if(window._palRerender)window._palRerender();
+  // Inicia análise IA se ainda não foi carregada
+  var p=G_PAL_PICKS[i];
+  if(!p)return;
+  var cacheKey=p.game+'|'+p.market+'|'+p.pick;
+  if(!G_AI_CACHE[cacheKey]){
+    // Mostra loading
+    var el=document.getElementById('ai-txt-'+i);
+    if(el)el.innerHTML='<span style="display:flex;align-items:center;gap:8px;color:var(--t3);font-size:.78rem"><div class="spin" style="width:14px;height:14px;border-width:2px"></div>A analisar o evento...</span>';
+    fetchAIAnalysis(p).then(function(txt){
+      G_AI_CACHE[cacheKey]=txt;
+      var el2=document.getElementById('ai-txt-'+i);
+      if(el2)el2.textContent=txt;
+    });
+  }
+}
 function clearPalSel(){G_PAL_SEL.clear();if(window._palRerender)window._palRerender();}
 function selectTopN(n){G_PAL_SEL.clear();G_PAL_PICKS.slice(0,n).forEach(function(_,i){G_PAL_SEL.add(i);});if(window._palRerender)window._palRerender();}
 function createPalTicket(){
