@@ -1166,13 +1166,22 @@ async function loadEV(force){
   if(!force&&G.ev.length){evRender(G.ev);return;}
   if(!ODDS_KEY){$('ev-body').innerHTML='<tr><td colspan="9" class="empty"><i class="fas fa-key" style="font-size:2rem;color:var(--yellow);display:block;margin-bottom:12px"></i><div style="color:var(--yellow);font-weight:600">Chave API necessaria</div></td></tr>';return;}
   $('ev-body').innerHTML='<tr><td colspan="9" class="empty"><div class="spin"></div><div style="margin-top:8px;color:var(--t3)">A carregar odds...</div></td></tr>';
-  // +EV: todos os desportos Tier 1 disponiveis
-  var keys=SPORTS.filter(function(s){return s.tier===1;});
-  // Show progress  
-  var evTotal=keys.length;
-  toast('A carregar '+evTotal+' ligas (pode demorar ~'+Math.ceil(evTotal*0.5)+'s)...','i');
+  // +EV: prioridade soccer activo + top desportos (preserva quota API)
+  var evPriority=['soccer_epl','soccer_spain_la_liga','soccer_italy_serie_a',
+    'soccer_germany_bundesliga','soccer_france_ligue_one','soccer_uefa_champs_league',
+    'soccer_uefa_europa_league','soccer_portugal_primeira_liga','basketball_nba',
+    'americanfootball_nfl','icehockey_nhl','baseball_mlb','mma_mixed_martial_arts',
+    'tennis_atp_singles','tennis_wta_singles','rugbyleague_nrl','boxing_boxing',
+    'soccer_conmebol_copa_libertadores','soccer_usa_mls','soccer_brazil_campeonato'];
+  var keys=SPORTS.filter(function(s){return evPriority.includes(s.k);});
+  // Sort by priority order
+  keys.sort(function(a,b){return evPriority.indexOf(a.k)-evPriority.indexOf(b.k);});
+  toast('A carregar '+keys.length+' ligas em paralelo...','i');
   G.allData=await fetchMulti(keys);
-  if(!G.allData.length){$('ev-body').innerHTML='<tr><td colspan="9" class="empty"><div style="margin-bottom:10px"><i class="fas fa-calendar-times" style="font-size:2rem;color:var(--t4)"></i></div><div style="color:var(--t2);font-weight:600;margin-bottom:6px">Sem jogos agendados agora nas ligas activas</div><div style="font-size:.74rem;color:var(--t3)">A API esta activa. Tenta novamente mais tarde ou verifica se ha jogos disponiveis.</div></td></tr>';return;}
+  if(!G.allData.length){
+    $('ev-body').innerHTML='<tr><td colspan="9" class="empty"><div style="margin-bottom:14px"><i class="fas fa-search" style="font-size:2rem;color:var(--t4)"></i></div><div style="color:var(--t2);font-weight:600;margin-bottom:8px">Sem jogos encontrados</div><div style="font-size:.74rem;color:var(--t3);max-width:420px;margin:0 auto;line-height:1.6">Possiveis razoes: (1) Quota API esgotada -- verifica em <a href="https://the-odds-api.com" target="_blank" style="color:var(--blue)">the-odds-api.com/account</a> (2) Sem jogos agendados nas ligas activas neste momento (3) Timeout -- tenta novamente</div><div style="margin-top:14px"><button onclick="loadEV(true)" class="btn btn-blue" style="padding:8px 20px"><i class="fas fa-sync-alt"></i> Tentar Novamente</button></div></td></tr>';
+    return;
+  }
   var minEV=parseFloat(($('ev-min')&&$('ev-min').value)||'0');
   var sp=($('ev-sport')&&$('ev-sport').value)||'all';
   var mk=($('ev-mkt-f')&&$('ev-mkt-f').value)||'all';
