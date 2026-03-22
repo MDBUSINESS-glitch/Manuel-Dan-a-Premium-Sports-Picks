@@ -491,8 +491,13 @@ html { scroll-behavior: smooth; }
 .app-page.active { display: block; }
 
 /* The picks page uses the module-wrap which needs height:100vh */
-#page-picks.active { display: flex; flex-direction: column; }
-#page-picks .module-wrap { height: calc(100vh - 68px); margin-top: 68px; }
+#page-picks.active { display: block; }
+#page-picks .module-wrap {
+  height: calc(100vh - 68px);
+  margin-top: 68px;
+  display: flex !important;
+  flex-direction: column !important;
+}
 
 /* ── MAIN NAVBAR ── */
 .main-nav {
@@ -949,8 +954,26 @@ html { scroll-behavior: smooth; }
      PAGE: PICKS (full module)
 ═══════════════════════════════════════════ -->
 <div id="page-picks" class="app-page">
-
-<div class="module-wrap">
+<div id="picks-welcome-bar" style="
+  position:fixed;top:68px;left:0;right:0;z-index:400;
+  background:linear-gradient(90deg,rgba(10,15,8,.98),rgba(12,18,10,.98));
+  border-bottom:1px solid rgba(198,255,0,.18);
+  padding:8px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-family:'Outfit',sans-serif;font-size:.84rem;
+  transition:transform .3s ease;
+" id="picks-trial-bar">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:.8rem">🎁</span>
+    <span id="picks-bar-txt" style="color:rgba(255,255,255,.7)">Loading...</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="picks-bar-days" style="font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:#c6ff00"></span>
+    <button onclick="document.getElementById('picks-welcome-bar').style.display='none';document.querySelector('#page-picks .module-wrap').style.marginTop='68px'"
+      style="background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:.8rem;padding:2px 6px">✕</button>
+  </div>
+</div>
+<div class="module-wrap" id="picks-module-wrap">
   <!-- ROW 1: Sport tabs -->
   <div class="sport-row" id="sport-row"></div>
   <!-- ROW 2: Market sub-filters (contextual per sport) -->
@@ -1222,8 +1245,6 @@ html { scroll-behavior: smooth; }
 <div id="tw"></div>
 
 <script>
-'use strict';
-
 'use strict';
 
 /* ================================================================
@@ -2790,29 +2811,60 @@ function goPage(name){
   const p = document.getElementById('page-'+name);
   if(p) p.classList.add('active');
   _currentPage = name;
-  window.scrollTo(0,0);
+  if(name !== 'picks') window.scrollTo(0,0);
   document.querySelectorAll('.nav-link').forEach(b=>b.classList.remove('active-link'));
-  const nl = document.getElementById('nl-'+name);
+  // Update nav highlight — picks maps to nl-picks
+  const navId = 'nl-' + name;
+  const nl = document.getElementById(navId);
   if(nl) nl.classList.add('active-link');
-  if(name==='picks') initPicksPage();
+  if(name==='picks')    { setTimeout(initPicksPage, 50); }  // slight delay ensures DOM is active
   if(name==='rankings') renderRankings();
-  if(name==='pricing') renderFAQ();
+  if(name==='pricing')  renderFAQ();
   updateNav();
 }
 
 function requireAuth(dest){
   const sess=getSession();
-  if(sess&&isTrialActive(sess)) goPage(dest);
-  else { _afterAuthDest=dest; openAuth('register'); }
+  if(sess && isTrialActive(sess)){
+    _afterAuthDest = dest || 'picks';
+    goPage(dest || 'picks');
+  } else {
+    _afterAuthDest = dest || 'picks';
+    openAuth('register');
+  }
 }
 
 let _afterAuthDest = 'picks';
 
 function initPicksPage(){
-  // Load preview picks automatically when picks page opens
-  if(typeof PM !== 'undefined'){
-    if(!window._picksLoaded){ PM.loadPreview(); window._picksLoaded=true; }
-    else { PM.init(); }
+  // Always init PM DOM structures, then load picks
+  if(typeof PM === 'undefined') return;
+  try {
+    PM.init();
+    PM.loadPreview();
+    window._picksLoaded = true;
+  } catch(e) {
+    console.warn('PM init error:', e);
+  }
+
+  // Update welcome/trial bar
+  const sess = getSession();
+  const bar  = document.getElementById('picks-welcome-bar');
+  const txt  = document.getElementById('picks-bar-txt');
+  const daysEl = document.getElementById('picks-bar-days');
+  const wrap = document.getElementById('picks-module-wrap');
+  if(sess && bar && txt && daysEl && wrap){
+    const days = trialDaysLeft(sess.registeredAt);
+    const first = sess.name.split(' ')[0];
+    bar.style.display = '';
+    txt.innerHTML = `Welcome <strong style="color:#edf1f4">${first}</strong> — Free Trial Active · Full access to all picks`;
+    daysEl.innerHTML = `<span style="color:#c6ff00">${days}</span> <span style="font-size:.65rem;color:rgba(255,255,255,.4);font-family:'Outfit',sans-serif;font-weight:500">days left</span>`;
+    // Adjust module-wrap top margin for the welcome bar
+    wrap.style.marginTop = '106px';
+    wrap.style.height    = 'calc(100vh - 106px)';
+  } else if(bar){
+    bar.style.display = 'none';
+    if(wrap){ wrap.style.marginTop = '68px'; wrap.style.height = 'calc(100vh - 68px)'; }
   }
 }
 
